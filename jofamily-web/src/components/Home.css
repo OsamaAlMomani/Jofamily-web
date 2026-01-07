@@ -4,14 +4,17 @@ html {
 }
 
 .header {
-  background-color: rgba(255, 255, 255, 0.95);
-  padding: var(--space-16) 0;
-  box-shadow: var(--shadow-md);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: var(--space-20) 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: var(--z-fixed);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .header-container {
@@ -44,48 +47,20 @@ html {
 
 .nav-link {
   text-decoration: none;
-  color: var(--color-text-primary);
+  color: rgba(255, 255, 255, 0.95);
   font-weight: var(--font-weight-medium);
   transition: color var(--transition-base);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+               0 0 20px rgba(139, 92, 246, 0.4),
+               0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 .nav-link:hover {
-  color: var(--brand-primary-light);
-}
-
-/* Theme Toggle Button */
-.theme-toggle {
-  background: transparent;
-  border: 2px solid var(--color-text-tertiary);
-  border-radius: var(--radius-round);
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: var(--font-size-xl);
-  transition: all var(--transition-base);
-  flex-shrink: 0;
-}
-
-.theme-toggle:hover {
-  background: var(--brand-primary-light);
-  border-color: var(--brand-primary-light);
-  transform: rotate(20deg) scale(1.1);
-}
-
-.theme-toggle:active {
-  transform: rotate(20deg) scale(0.95);
-}
-
-[data-theme="dark"] .theme-toggle {
-  border-color: var(--discord-muted);
-}
-
-[data-theme="dark"] .theme-toggle:hover {
-  background: var(--discord-accent);
-  border-color: var(--discord-accent);
+  color: #ffffff;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.9),
+               0 0 30px rgba(139, 92, 246, 0.8),
+               0 0 45px rgba(167, 139, 250, 0.6),
+               0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 .main-content {
@@ -104,13 +79,20 @@ html {
 
 /* Intro Section - Split Layout */
 .intro-section {
-  background: linear-gradient(135deg, 
-    rgba(30, 58, 138, 0.15), 
-    rgba(59, 130, 246, 0.15), 
-    rgba(14, 165, 233, 0.15)
-  );
-  animation: gradientShift 15s ease infinite;
-  background-size: 200% 200%;
+  background: url('../assets/static/homepagelego/1.png') center/cover no-repeat;
+  padding: var(--space-96) var(--page-gutter);
+  position: relative;
+}
+
+.intro-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  pointer-events: none;
 }
 
 @keyframes gradientShift {
@@ -151,77 +133,48 @@ html {
 }
 
 .intro-title {
-  font-size: var(--font-size-6xl);
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
   font-weight: var(--font-weight-bold);
-  margin: 0 0 var(--space-24) 0;
-  background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light), var(--brand-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: var(--line-height-tight);
+  margin: 0 0 var(--space-32) 0;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.1;
   position: relative;
-  padding: var(--space-32) var(--space-48);
-  text-shadow: 2px 2px 20px rgba(30, 58, 138, 0.5);
+  padding: 0;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+               0 0 40px rgba(139, 92, 246, 0.6),
+               0 2px 10px rgba(0, 0, 0, 0.8);
 }
 
-.intro-title::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border-radius: var(--radius-xl);
-  border: 3px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 
-    0 8px 32px 0 rgba(102, 126, 234, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.8),
-    0 0 20px 2px rgba(102, 126, 234, 0.3),
-    inset 0 2px 4px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -2px 4px 0 rgba(255, 255, 255, 0.3);
-  z-index: -1;
-  animation: glow 3s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-  from {
-    opacity: 0.7;
-    transform: scale(0.98);
-    border-color: rgba(255, 255, 255, 0.6);
-    box-shadow: 
-      0 8px 32px 0 rgba(30, 58, 138, 0.4),
-      0 0 0 1px rgba(255, 255, 255, 0.8),
-      0 0 20px 2px rgba(30, 58, 138, 0.3),
-      inset 0 2px 4px 0 rgba(255, 255, 255, 0.7),
-      inset 0 -2px 4px 0 rgba(255, 255, 255, 0.3);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1.02);
-    border-color: rgba(255, 255, 255, 0.9);
-    box-shadow: 
-      0 12px 48px 0 rgba(30, 58, 138, 0.6),
-      0 0 0 2px rgba(255, 255, 255, 1),
-      0 0 30px 4px rgba(30, 58, 138, 0.5),
-      inset 0 3px 6px 0 rgba(255, 255, 255, 0.9),
-      inset 0 -3px 6px 0 rgba(255, 255, 255, 0.5);
-  }
+.intro-title .highlight {
+  font-style: italic;
+  color: #c4b5fd;
+  text-shadow: 0 0 25px rgba(196, 181, 253, 0.8),
+               0 0 50px rgba(139, 92, 246, 0.6);
 }
 
 .intro-description {
-  font-size: var(--font-size-2xl);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-24);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: #ffffff;
+  margin-bottom: var(--space-32);
   line-height: var(--line-height-relaxed);
+  max-width: 600px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 1),
+               0 0 20px rgba(255, 255, 255, 0.9),
+               0 0 30px rgba(139, 92, 246, 1),
+               0 0 50px rgba(139, 92, 246, 0.8),
+               0 0 70px rgba(167, 139, 250, 0.6),
+               0 0 90px rgba(167, 139, 250, 0.4),
+               0 2px 15px rgba(0, 0, 0, 1);
+  filter: brightness(1.2) contrast(1.1);
+  font-weight: 500;
 }
 
 .intro-subtitle {
   font-size: var(--font-size-xl);
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.85);
   font-style: italic;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .intro-right {
@@ -244,17 +197,8 @@ html {
 
 /* Contact Section */
 .contact-section {
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(251, 191, 36, 0.2) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
-    linear-gradient(135deg, 
-      rgba(99, 102, 241, 0.1), 
-      rgba(168, 85, 247, 0.1),
-      rgba(236, 72, 153, 0.1)
-    );
-  background-size: 100% 100%, 100% 100%, 100% 100%, 200% 200%;
-  animation: joyfulShift 20s ease infinite;
+  background: url('../assets/static/homepagelego/2.png') center/cover no-repeat;
+  backdrop-filter: blur(10px);
   position: relative;
 }
 
@@ -265,23 +209,8 @@ html {
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.03) 0px,
-      rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px,
-      transparent 40px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.03) 0px,
-      rgba(255, 255, 255, 0.03) 1px,
-      transparent 1px,
-      transparent 40px
-    );
+  background: rgba(0, 0, 0, 0.7);
   pointer-events: none;
-  z-index: 0;
 }
 
 .contact-section .section-container {
@@ -289,21 +218,21 @@ html {
   z-index: 1;
 }
 
-@keyframes joyfulShift {
-  0%, 100% {
-    background-position: 0% 50%, 100% 50%, 50% 50%, 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%, 0% 50%, 50% 100%, 100% 50%;
-  }
-}
-
 /* Features Section */
 .features-section {
-  background: linear-gradient(135deg, 
-    rgba(14, 165, 233, 0.15), 
-    rgba(59, 130, 246, 0.15)
-  );
+  background: url('../assets/static/homepagelego/3.png') center/cover no-repeat;
+  position: relative;
+}
+
+.features-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  pointer-events: none;
 }
 
 .section-container {
@@ -317,29 +246,28 @@ html {
   font-weight: var(--font-weight-bold);
   margin: 0 0 var(--space-16) 0;
   text-align: center;
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+               0 0 40px rgba(139, 92, 246, 0.6),
+               0 2px 10px rgba(0, 0, 0, 0.8);
 }
 
 .section-subtitle {
   font-size: var(--font-size-xl);
   text-align: center;
   margin-bottom: var(--space-48);
-  background: var(--gradient-brand-secondary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+               0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 .form-section {
-  background: rgba(255, 255, 255, 0.9);
-  padding: var(--space-32);
-  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.8);
+  padding: var(--space-40);
+  border-radius: var(--radius-xxl);
   margin-bottom: var(--space-32);
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   animation: slideIn 0.8s ease-out 0.3s both;
 }
 
@@ -473,32 +401,29 @@ html {
 .button-group {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 4rem;
   align-items: center;
   justify-content: center;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
 }
 
 .btn-large {
-  padding: 1.5rem 4rem;
-  font-size: 1.4rem;
-  font-weight: 600;
+  padding: 1rem 2.5rem;
+  font-size: 1.125rem;
+  font-weight: var(--font-weight-semibold);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-round);
   cursor: pointer;
-  transition: all 0.3s;
-  min-width: 300px;
+  transition: all var(--transition-base);
+  min-width: 200px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.25);
+  outline: none;
+}
+
+.btn-large:focus,
+.btn-large:active {
+  outline: none;
 }
 
 .btn-large::before {
@@ -520,37 +445,45 @@ html {
 }
 
 .btn-login {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
   border: 2px solid transparent;
-  box-shadow: 0 4px 15px rgba(30, 58, 138, 0.4);
-  animation: colorShift 3s ease infinite;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+  position: relative;
+  overflow: visible;
+  animation: flip3d 6s ease-in-out infinite;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  color: #ffffff;
+  font-weight: var(--font-weight-bold);
 }
 
-@keyframes colorShift {
+@keyframes flip3d {
   0%, 100% {
-    filter: hue-rotate(0deg);
+    transform: perspective(1000px) rotateY(0deg);
+  }
+  25% {
+    transform: perspective(1000px) rotateY(10deg);
   }
   50% {
-    filter: hue-rotate(20deg);
+    transform: perspective(1000px) rotateY(0deg);
   }
-}
-
-.btn-login:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  75% {
+    transform: perspective(1000px) rotateY(-10deg);
+  }
 }
 
 .btn-create-account {
-  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
-  animation: colorShift 3s ease infinite reverse;
-}
-
-.btn-create-account:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+  background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 100%);
+  border: 2px solid transparent;
+  box-shadow: 0 8px 32px rgba(167, 139, 250, 0.3);
+  position: relative;
+  overflow: visible;
+  animation: flip3d 6s ease-in-out infinite;
+  animation-delay: 0.5s;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  color: #ffffff;
+  font-weight: var(--font-weight-bold);
 }
 
 @media (max-width: 768px) {
@@ -612,3 +545,48 @@ html {
     padding: 0.6rem;
   }
 }
+
+/* Gallery Section */
+.gallery-section {
+  background: url('../assets/static/homepagelego/5.png') center/cover no-repeat;
+  position: relative;
+}
+
+.gallery-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+
+.gallery-section .section-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Community Section */
+.community-section {
+  background: url('../assets/static/homepagelego/4.png') center/cover no-repeat;
+  position: relative;
+}
+
+.community-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+
+.community-section .section-container {
+  position: relative;
+  z-index: 1;
+}
+

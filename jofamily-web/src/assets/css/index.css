@@ -51,14 +51,25 @@
   --discord-muted: #b9bbbe;
   --discord-greyple: #99aab5;
   
+  /* Fly.io-Inspired Pastel Color Palette */
+  --pastel-pink: #ffc0cb;
+  --pastel-peach: #ffb088;
+  --pastel-orange: #ffcc99;
+  --pastel-purple: #b19cd9;
+  --pastel-blue: #a0c4ff;
+  --pastel-cyan: #9de3d0;
+  --pastel-mint: #b4e7ce;
+  --pastel-yellow: #ffe5a0;
+  --pastel-lavender: #e0d5f5;
+  
   /* Brand Colors - Light Theme (Default) */
-  --brand-primary: #1e3a8a;
-  --brand-primary-light: #3b82f6;
-  --brand-primary-lighter: #60a5fa;
-  --brand-secondary: #0ea5e9;
-  --brand-secondary-light: #06b6d4;
-  --brand-accent: #8b5cf6;
-  --brand-accent-light: #a78bfa;
+  --brand-primary: #8b5cf6;
+  --brand-primary-light: #a78bfa;
+  --brand-primary-lighter: #c4b5fd;
+  --brand-secondary: #a0c4ff;
+  --brand-secondary-light: #9de3d0;
+  --brand-accent: #ffb088;
+  --brand-accent-light: #ffc0cb;
   
   /* UI Colors - Light Theme */
   --color-white: #ffffff;

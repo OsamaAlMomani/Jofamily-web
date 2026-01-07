@@ -1,11 +1,6 @@
 import './Home.css';
 
-interface HomeProps {
-  theme: 'light' | 'dark';
-  onToggleTheme: () => void;
-}
-
-function Home({ theme, onToggleTheme }: HomeProps) {
+function Home() {
   return (
     <>
       <header className="header">
@@ -17,14 +12,6 @@ function Home({ theme, onToggleTheme }: HomeProps) {
               <li className="nav-item"><a href="#features" className="nav-link">Features</a></li>
             </ul>
           </nav>
-          <button 
-            onClick={onToggleTheme} 
-            className="theme-toggle"
-            aria-label="Toggle theme"
-            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
         </div>
       </header>
 
@@ -33,19 +20,20 @@ function Home({ theme, onToggleTheme }: HomeProps) {
         <section id="intro" className="section intro-section">
           <div className="split-container">
             <div className="intro-left">
-              <h1 className="intro-title">Welcome to JoFamily</h1>
+              <h1 className="intro-title">
+                Connect your family.
+                <br />
+                Share <span className="highlight">joyfully</span>.
+              </h1>
               <p className="intro-description">
-                Connect with your family and friends in a whole new way. 
-                Share moments, create memories, and stay close to the ones you love.
-              </p>
-              <p className="intro-subtitle">
-                Join thousands of families building stronger connections every day.
+                The platform for families who want to stay connected. 
+                Share moments, create memories, and strengthen bonds with confidence.
               </p>
             </div>
             <div className="intro-right">
               <div className="button-group">
-                <button className="btn-large btn-login">Log In</button>
-                <button className="btn-large btn-create-account">Create An Account</button>
+                <button className="btn-large btn-login" data-text="Log In">Log In</button>
+                <button className="btn-large btn-create-account" data-text="Create An Account">Create An Account</button>
               </div>
             </div>
           </div>
@@ -128,6 +116,22 @@ function Home({ theme, onToggleTheme }: HomeProps) {
                 </tbody>
               </table>
             </div>
+          </div>
+        </section>
+
+        {/* Section 4: Gallery */}
+        <section id="gallery" className="section gallery-section">
+          <div className="section-container">
+            <h2 className="section-title">Family Moments</h2>
+            <p className="section-subtitle">Cherish every moment together</p>
+          </div>
+        </section>
+
+        {/* Section 5: Community */}
+        <section id="community" className="section community-section">
+          <div className="section-container">
+            <h2 className="section-title">Join Our Community</h2>
+            <p className="section-subtitle">Connect with families around the world</p>
           </div>
         </section>
       </main>

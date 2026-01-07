@@ -1,12 +1,22 @@
 .lego_yellow {
-  background-color: #FFD700;
-  background-image: url('../static/homepagelego/lego.png');
-  background-size: cover;
-  background-position: top center;
-  background-repeat: repeat-y;
-  background-attachment: scroll;
+  background: linear-gradient(135deg, 
+    #fce7f3 0%, 
+    #e0d5f5 25%, 
+    #ddd6fe 50%, 
+    #c7d2fe 75%, 
+    #dbeafe 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientFlow 15s ease infinite;
   width: 100%;
   min-height: 100vh;
+  position: relative;
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 body {

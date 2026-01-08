@@ -13,9 +13,18 @@ dist-ssr
 .firebase
 *.local
 
+# Firebase Functions build outputs
+functions/lib/**/*.js
+functions/lib/**/*.js.map
+functions/typings/
+
 # Environment files
 .env
 .env.*
+
+# Local scratch files
+not now
+u\ generate\ one\ 
 
 # Editor directories and files
 .vscode/*
@@ -27,3 +36,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+

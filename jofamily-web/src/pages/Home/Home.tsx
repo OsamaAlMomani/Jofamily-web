@@ -34,7 +34,7 @@ function Home() {
             <div className="intro-right">
               <div className="button-group">
                 <Link to="/login" className="btn-large btn-login" data-text="Log In">Log In</Link>
-                <Link to="/login" className="btn-large btn-create-account" data-text="Create An Account">Create An Account</Link>
+                <Link to="/signup" className="btn-large btn-create-account" data-text="Create An Account">Create An Account</Link>
               </div>
             </div>
           </div>

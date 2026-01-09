@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { authErrorMessage } from '../../auth/authErrorMessage';
 import './Login.css';
 
 function Login() {
@@ -34,8 +35,7 @@ function Login() {
       await loginWithGoogle();
       navigate('/');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Google login failed.';
-      setError(message);
+      setError(authErrorMessage(err, 'Google login failed.'));
     } finally {
       setSubmitting(false);
     }

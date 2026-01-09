@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useAuth } from '../../auth/AuthContext';
+import { authErrorMessage } from '../../auth/authErrorMessage';
 import { db } from '../../firebase/firebase';
 import './CreateAcc.css';
 
@@ -35,8 +36,7 @@ export default function CreateAcc() {
             );
             navigate('/');
         } catch (err) {
-            const message = err instanceof Error ? err.message : 'Google signup failed.';
-            setError(message);
+            setError(authErrorMessage(err, 'Google signup failed.'));
         } finally {
             setSubmitting(false);
         }

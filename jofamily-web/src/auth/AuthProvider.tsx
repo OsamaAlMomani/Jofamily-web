@@ -41,6 +41,7 @@ export default function AuthProvider({ children }: Props) {
       },
       loginWithGoogle: async () => {
         const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
         return await signInWithPopup(auth, provider);
       },
       logout: async () => {

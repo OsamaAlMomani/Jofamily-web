@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RTC Practice (UI Template)</title>
+    <link rel="stylesheet" href="/rtc-practice.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div>
+          <h1>RTC Practice</h1>
+          <p>UI-only HTML template to practice WebRTC later (no RTC implemented).</p>
+        </div>
+
+        <div class="topbar-right">
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" placeholder="e.g. Osama" />
+          </div>
+          <div class="field">
+            <label for="room">Room</label>
+            <input id="room" value="practice-room-1" />
+          </div>
+          <div class="actions">
+            <button class="btn ghost" type="button" id="tipBtn">Show tip</button>
+            <button class="btn danger" type="button" id="clearBtn">Clear</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="card">
+          <div class="card-header">
+            <h2>Video</h2>
+            <p>Attach streams to these elements when implementing.</p>
+          </div>
+
+          <div class="video-grid">
+            <div class="video-tile">
+              <div class="tile-label">Local</div>
+              <div class="video"></div>
+              <div class="hint">localVideo.srcObject = localStream</div>
+            </div>
+            <div class="video-tile">
+              <div class="tile-label">Remote</div>
+              <div class="video"></div>
+              <div class="hint">remoteVideo.srcObject = remoteStream</div>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <button class="btn" type="button">Start camera</button>
+            <button class="btn" type="button">Start mic</button>
+            <button class="btn" type="button">Share screen</button>
+            <span class="spacer"></span>
+            <button class="btn ghost" type="button">Device picker (later)</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <h2>Signaling Workbench</h2>
+            <p>Practice offer/answer + ICE copy/paste or signaling via a backend.</p>
+          </div>
+
+          <div class="panels">
+            <div class="panel">
+              <div class="panel-title">
+                <h3>Offer (SDP)</h3>
+                <div class="panel-actions">
+                  <button class="btn ghost" type="button">Copy</button>
+                  <button class="btn" type="button">Create</button>
+                </div>
+              </div>
+              <textarea placeholder="Paste/generate offer SDP here"></textarea>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">
+                <h3>Answer (SDP)</h3>
+                <div class="panel-actions">
+                  <button class="btn ghost" type="button">Copy</button>
+                  <button class="btn" type="button">Create</button>
+                </div>
+              </div>
+              <textarea placeholder="Paste/generate answer SDP here"></textarea>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">
+                <h3>Local ICE Candidates</h3>
+                <div class="panel-actions">
+                  <button class="btn ghost" type="button">Copy</button>
+                  <button class="btn" type="button">Gather</button>
+                </div>
+              </div>
+              <textarea placeholder="Each candidate on its own line or JSON"></textarea>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">
+                <h3>Remote ICE Candidates</h3>
+                <div class="panel-actions">
+                  <button class="btn" type="button">Apply</button>
+                </div>
+              </div>
+              <textarea placeholder="Paste remote candidates here"></textarea>
+            </div>
+          </div>
+
+          <div class="steps">
+            <h3>Suggested practice flow</h3>
+            <ol>
+              <li>Open this page in two tabs (A and B).</li>
+              <li>On A: Create Offer → copy → paste into B.</li>
+              <li>On B: Create Answer → copy → paste into A.</li>
+              <li>Exchange ICE candidates both ways (or via signaling).</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <h2>Logs</h2>
+            <p>Keep notes while wiring events.</p>
+          </div>
+          <div class="log-actions">
+            <button class="btn ghost" type="button">Clear logs</button>
+            <button class="btn ghost" type="button">Copy logs</button>
+          </div>
+          <pre class="log" id="log">[UI] Ready. Add RTC logic later.</pre>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="footer-inner">
+          <div><strong>Next:</strong> add WebRTC step-by-step (getUserMedia → RTCPeerConnection → ICE → TURN).</div>
+          <div class="mono">/rtc-practice.html</div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      // UI-only helpers (NOT WebRTC): just to make the template feel alive.
+      const logEl = document.getElementById('log');
+      const tipBtn = document.getElementById('tipBtn');
+      const clearBtn = document.getElementById('clearBtn');
+
+      function addLog(msg) {
+        logEl.textContent = `[UI] ${msg}\n` + logEl.textContent;
+      }
+
+      tipBtn?.addEventListener('click', () => addLog('Tip: start with manual SDP copy/paste between two tabs.'));
+      clearBtn?.addEventListener('click', () => addLog('Cleared fields (UI only).'));
+    </script>
+  </body>
+</html>

@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home/Home';
 import Login from './pages/Login/Login';
 import CreateAcc from './pages/CreateAcc/CreateAcc';
+import RTCPractice from './pages/RTCPractice/RTCPractice';
 import './styles/App.css';
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<CreateAcc />} />
+        <Route path="/rtc-practice" element={<RTCPractice />} />
       </Routes>
     </div>
   )

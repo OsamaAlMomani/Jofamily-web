@@ -11,6 +11,7 @@ function Home() {
               <li className="nav-item"><a href="#intro" className="nav-link">Home</a></li>
               <li className="nav-item"><a href="#contact" className="nav-link">Contact</a></li>
               <li className="nav-item"><a href="#features" className="nav-link">Features</a></li>
+              <li className="nav-item"><Link to="/rtc-practice" className="nav-link">RTC Practice</Link></li>
             </ul>
           </nav>
         </div>

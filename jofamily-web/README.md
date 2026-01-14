@@ -1,5 +1,11 @@
 # React + TypeScript + Vite
 
+## RTC / WebRTC
+
+This repo includes an RTC learning page (`/rtc-practice`) plus notes on how WebRTC works and what it changes in your project.
+
+- Docs: [docs/RTC.md](docs/RTC.md)
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

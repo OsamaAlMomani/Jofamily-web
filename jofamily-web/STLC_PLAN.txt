@@ -1,0 +1,1350 @@
+================================================================================
+  OPTIMIZED STLC PLAN FOR JOFAMILY WEBRTC PROJECT
+  Software Testing Life Cycle - Production Readiness Plan
+================================================================================
+
+PROJECT OVERVIEW
+----------------
+Technology Stack:
+- Frontend: React 19 + TypeScript + Vite (rolldown-vite)
+- Routing: React Router DOM v7
+- Backend: Firebase (Firestore + Auth)
+- Real-time: WebRTC (peer-to-peer video/audio)
+- Build: TypeScript + Vite
+
+
+================================================================================
+PHASE 1: REQUIREMENT ANALYSIS & TEST PLANNING (WEEK 1)
+================================================================================
+
+1.1 CRITICAL FEATURES IDENTIFICATION
+------------------------------------
+
+Priority P0 (Must Work - Zero Tolerance for Failure):
+✓ WebRTC peer connection establishment
+✓ Audio streaming (bidirectional)
+✓ Video streaming (bidirectional)
+✓ Firestore room signaling (create/join)
+✓ ICE candidate exchange
+✓ Camera/microphone permissions handling
+
+Priority P1 (Important - High Impact):
+✓ Device selection (camera/mic dropdowns)
+✓ Screen sharing functionality
+✓ Room URL sharing and navigation
+✓ Connection state handling & reconnection
+✓ Firebase authentication (if enabled)
+✓ Proper cleanup on disconnect
+
+Priority P2 (Nice to Have - Low Impact):
+✓ Mic level meter visualization
+✓ Chat UI (currently placeholder)
+✓ Manual SDP copy/paste fallback
+✓ Log panel for debugging
+
+
+1.2 RISK ASSESSMENT MATRIX
+---------------------------
+
+Risk                              | Impact | Probability | Mitigation Strategy
+----------------------------------|--------|-------------|--------------------
+WebRTC fails on specific browsers | High   | Medium      | Cross-browser E2E tests
+Firestore permissions block access| High   | Medium      | Emulator tests + security rules
+Camera not working on mobile      | High   | Medium      | Real device testing
+NAT traversal failure (no TURN)   | High   | High        | STUN tests + TURN fallback
+Memory leaks (streams not cleaned)| Medium | Medium      | Performance tests + audits
+Firebase quota exceeded           | Medium | Low         | Usage monitoring + alerts
+Network interruptions             | Medium | High        | Reconnection logic tests
+
+
+1.3 TEST SCOPE
+--------------
+
+IN SCOPE:
+- All RTC utilities (src/rtc/*)
+- Room creation and joining flow
+- WebRTC peer connection logic
+- Firestore signaling integration
+- React components (Rooms, RTCPractice)
+- Device enumeration and selection
+- Screen sharing
+- Cross-browser compatibility (Chrome, Firefox, Safari)
+- Mobile browser testing (iOS Safari, Chrome Android)
+
+OUT OF SCOPE (Future Phases):
+- Chat functionality (placeholder only)
+- Firebase Functions (if any)
+- Advanced error recovery
+- TURN server integration
+- Recording/playback features
+
+
+================================================================================
+PHASE 2: TEST ENVIRONMENT SETUP (WEEK 1-2)
+================================================================================
+
+2.1 INSTALL TESTING STACK
+--------------------------
+
+Step 1: Unit & Component Testing
+---------------------------------
+npm install -D vitest @vitest/ui @vitest/coverage-v8
+npm install -D @testing-library/react @testing-library/jest-dom
+npm install -D @testing-library/user-event jsdom
+
+
+Step 2: E2E Testing
+--------------------
+npm install -D @playwright/test
+npx playwright install chromium firefox webkit
+
+
+Step 3: Firebase Emulators
+---------------------------
+npm install -D firebase-tools
+
+
+Step 4: Code Quality Tools
+---------------------------
+npm install -D prettier eslint-plugin-testing-library
+
+
+2.2 CONFIGURATION FILES
+-----------------------
+
+File: vitest.config.ts
+----------------------
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react-swc';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/tests/setup.ts',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      exclude: [
+        'node_modules/',
+        'src/tests/',
+        '**/*.config.ts',
+        '**/types.ts'
+      ],
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 65,
+        statements: 70
+      }
+    },
+  },
+});
+
+
+File: playwright.config.ts
+---------------------------
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: false, // WebRTC tests need sequential execution
+  workers: 1,
+  retries: process.env.CI ? 2 : 0,
+  reporter: 'html',
+  use: {
+    baseURL: 'http://localhost:5173',
+    trace: 'on-first-retry',
+    video: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI,
+  },
+});
+
+
+File: src/tests/setup.ts
+------------------------
+import '@testing-library/jest-dom';
+import { expect, afterEach, vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+});
+
+// Mock navigator.mediaDevices
+global.navigator.mediaDevices = {
+  getUserMedia: vi.fn(),
+  enumerateDevices: vi.fn(),
+  getDisplayMedia: vi.fn(),
+};
+
+// Mock RTCPeerConnection
+global.RTCPeerConnection = vi.fn();
+
+
+File: firebase.json (for emulators)
+------------------------------------
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    }
+  }
+}
+
+
+2.3 UPDATE PACKAGE.JSON SCRIPTS
+--------------------------------
+
+Add to "scripts" section:
+{
+  "dev": "vite",
+  "build": "tsc -b && vite build",
+  "lint": "eslint .",
+  "preview": "vite preview",
+  
+  "test": "vitest",
+  "test:ui": "vitest --ui",
+  "test:coverage": "vitest --coverage",
+  "test:watch": "vitest --watch",
+  
+  "test:e2e": "playwright test",
+  "test:e2e:ui": "playwright test --ui",
+  "test:e2e:debug": "playwright test --debug",
+  "test:e2e:headed": "playwright test --headed",
+  
+  "firebase:emulators": "firebase emulators:start",
+  "firebase:emulators:export": "firebase emulators:export ./emulator-data",
+  
+  "test:all": "npm run test && npm run test:e2e",
+  "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+  "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\""
+}
+
+
+================================================================================
+PHASE 3: TEST CASE DEVELOPMENT (WEEK 2)
+================================================================================
+
+3.1 UNIT TESTS (VITEST)
+-----------------------
+
+Directory Structure:
+--------------------
+src/
+├── rtc/
+│   ├── __tests__/
+│   │   ├── id.test.ts
+│   │   ├── routing.test.ts
+│   ├── webrtc/
+│   │   ├── __tests__/
+│   │   │   ├── ice.test.ts
+│   │   │   ├── peerConnection.test.ts
+│   ├── media/
+│   │   ├── __tests__/
+│   │   │   ├── combinedStream.test.ts
+│   ├── signaling/
+│       ├── __tests__/
+│           ├── firestoreRooms.test.ts
+├── pages/
+    ├── Rooms/
+    │   ├── __tests__/
+    │   │   ├── Rooms.test.tsx
+    ├── RTCPractice/
+        ├── components/
+            ├── __tests__/
+                ├── RTCHeader.test.tsx
+                ├── RTCVideoPanel.test.tsx
+
+
+Test Suite 1: src/rtc/__tests__/id.test.ts
+-------------------------------------------
+import { describe, it, expect } from 'vitest';
+import { generateRoomId } from '../id';
+
+describe('generateRoomId', () => {
+  it('generates unique IDs', () => {
+    const id1 = generateRoomId();
+    const id2 = generateRoomId();
+    expect(id1).not.toBe(id2);
+  });
+  
+  it('generates valid UUID format', () => {
+    const id = generateRoomId();
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    expect(id).toMatch(uuidRegex);
+  });
+  
+  it('generates non-empty string', () => {
+    const id = generateRoomId();
+    expect(id).toBeTruthy();
+    expect(id.length).toBeGreaterThan(0);
+  });
+});
+
+
+Test Suite 2: src/rtc/__tests__/routing.test.ts
+------------------------------------------------
+import { describe, it, expect } from 'vitest';
+import { buildRtcRoomPath, buildRtcRoomLink } from '../routing';
+
+describe('buildRtcRoomPath', () => {
+  it('creates correct path for simple room id', () => {
+    expect(buildRtcRoomPath('test-123')).toBe('/rtc-practice/test-123');
+  });
+  
+  it('encodes special characters', () => {
+    expect(buildRtcRoomPath('room with spaces')).toBe('/rtc-practice/room%20with%20spaces');
+  });
+  
+  it('handles empty string', () => {
+    expect(buildRtcRoomPath('')).toBe('/rtc-practice/');
+  });
+});
+
+describe('buildRtcRoomLink', () => {
+  it('creates full URL with origin', () => {
+    const link = buildRtcRoomLink('test-123');
+    expect(link).toContain('http');
+    expect(link).toContain('/rtc-practice/test-123');
+  });
+  
+  it('encodes room id in URL', () => {
+    const link = buildRtcRoomLink('test room');
+    expect(link).toContain('test%20room');
+  });
+});
+
+
+Test Suite 3: src/rtc/webrtc/__tests__/ice.test.ts
+---------------------------------------------------
+import { describe, it, expect, beforeEach } from 'vitest';
+import { safeAddIceCandidate, flushPendingCandidates } from '../ice';
+
+describe('ICE Candidate Buffering', () => {
+  let mockPC;
+  let pendingRef;
+  const mockCandidate = {
+    candidate: 'candidate:1 1 udp 2130706431 192.168.1.1 50000 typ host',
+    sdpMid: '0',
+    sdpMLineIndex: 0
+  };
+
+  beforeEach(() => {
+    pendingRef = { current: [] };
+    mockPC = {
+      remoteDescription: null,
+      addIceCandidate: vi.fn().mockResolvedValue(undefined)
+    };
+  });
+
+  it('buffers candidates when no remote description', async () => {
+    await safeAddIceCandidate(mockPC, mockCandidate, pendingRef);
+    
+    expect(pendingRef.current).toHaveLength(1);
+    expect(pendingRef.current[0]).toEqual(mockCandidate);
+    expect(mockPC.addIceCandidate).not.toHaveBeenCalled();
+  });
+
+  it('adds candidate directly when remote description exists', async () => {
+    mockPC.remoteDescription = { type: 'offer', sdp: 'mock-sdp' };
+    
+    await safeAddIceCandidate(mockPC, mockCandidate, pendingRef);
+    
+    expect(pendingRef.current).toHaveLength(0);
+    expect(mockPC.addIceCandidate).toHaveBeenCalledWith(mockCandidate);
+  });
+
+  it('flushes pending candidates after remote description set', async () => {
+    // Buffer candidates
+    await safeAddIceCandidate(mockPC, mockCandidate, pendingRef);
+    await safeAddIceCandidate(mockPC, mockCandidate, pendingRef);
+    expect(pendingRef.current).toHaveLength(2);
+    
+    // Set remote description and flush
+    mockPC.remoteDescription = { type: 'offer', sdp: 'mock-sdp' };
+    await flushPendingCandidates(mockPC, pendingRef);
+    
+    expect(pendingRef.current).toHaveLength(0);
+    expect(mockPC.addIceCandidate).toHaveBeenCalledTimes(2);
+  });
+});
+
+
+Test Suite 4: src/pages/Rooms/__tests__/Rooms.test.tsx
+-------------------------------------------------------
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { BrowserRouter } from 'react-router-dom';
+import Rooms from '../Rooms';
+
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => ({
+  ...await vi.importActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
+
+describe('Rooms Page', () => {
+  const renderRooms = () => {
+    return render(
+      <BrowserRouter>
+        <Rooms />
+      </BrowserRouter>
+    );
+  };
+
+  it('renders all main elements', () => {
+    renderRooms();
+    expect(screen.getByRole('heading', { name: /rooms/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/room id/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /create room/i })).toBeInTheDocument();
+  });
+
+  it('creates room and navigates on button click', async () => {
+    const user = userEvent.setup();
+    renderRooms();
+    
+    const createButton = screen.getByRole('button', { name: /create room/i });
+    await user.click(createButton);
+    
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/rtc-practice\/.+/)
+    );
+  });
+
+  it('join button is disabled when no room id', () => {
+    renderRooms();
+    const joinButton = screen.getByRole('button', { name: /join room/i });
+    expect(joinButton).toBeDisabled();
+  });
+
+  it('join button is enabled when room id entered', async () => {
+    const user = userEvent.setup();
+    renderRooms();
+    
+    const roomInput = screen.getByLabelText(/room id/i);
+    await user.type(roomInput, 'test-room-123');
+    
+    const joinButton = screen.getByRole('button', { name: /join room/i });
+    expect(joinButton).not.toBeDisabled();
+  });
+});
+
+
+3.2 INTEGRATION TESTS (FIREBASE EMULATOR)
+------------------------------------------
+
+Test Suite 5: src/rtc/signaling/__tests__/firestoreRooms.integration.test.ts
+-----------------------------------------------------------------------------
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, connectFirestoreEmulator, deleteDoc, doc } from 'firebase/firestore';
+import { createRoomDoc, writeRoomAnswer, listenForAnswer } from '../firestoreRooms';
+
+describe('Firestore Room Operations (Integration)', () => {
+  let db;
+  const testRoomId = 'test-integration-room';
+
+  beforeAll(() => {
+    const app = initializeApp({ projectId: 'test-project' });
+    db = getFirestore(app);
+    connectFirestoreEmulator(db, 'localhost', 8080);
+  });
+
+  afterAll(async () => {
+    // Cleanup
+    await deleteDoc(doc(db, 'rooms', testRoomId));
+  });
+
+  it('creates room document with offer', async () => {
+    const mockOffer = {
+      type: 'offer' as const,
+      sdp: 'mock-sdp-offer'
+    };
+
+    await createRoomDoc(db, testRoomId, 'Alice', mockOffer);
+    
+    const roomRef = doc(db, 'rooms', testRoomId);
+    const snap = await getDoc(roomRef);
+    
+    expect(snap.exists()).toBe(true);
+    expect(snap.data().createdBy).toBe('Alice');
+    expect(snap.data().offer).toEqual(mockOffer);
+  });
+
+  it('writes answer to existing room', async () => {
+    const mockAnswer = {
+      type: 'answer' as const,
+      sdp: 'mock-sdp-answer'
+    };
+
+    await writeRoomAnswer(db, testRoomId, 'Bob', mockAnswer);
+    
+    const roomRef = doc(db, 'rooms', testRoomId);
+    const snap = await getDoc(roomRef);
+    
+    expect(snap.data().answeredBy).toBe('Bob');
+    expect(snap.data().answer).toEqual(mockAnswer);
+  });
+});
+
+
+3.3 E2E TESTS (PLAYWRIGHT)
+---------------------------
+
+Directory Structure:
+--------------------
+e2e/
+├── fixtures/
+│   ├── mockMediaDevices.ts
+├── room-creation.spec.ts
+├── webrtc-connection.spec.ts
+├── device-selection.spec.ts
+├── navigation.spec.ts
+
+
+Test Suite 6: e2e/room-creation.spec.ts
+----------------------------------------
+import { test, expect } from '@playwright/test';
+
+test.describe('Room Creation Flow', () => {
+  test('user can create room from Rooms page', async ({ page }) => {
+    await page.goto('/rooms');
+    
+    // Fill in display name
+    await page.getByLabel('Name').fill('Alice');
+    
+    // Click create room
+    await page.getByRole('button', { name: /create room/i }).click();
+    
+    // Should navigate to RTC practice with room ID in URL
+    await expect(page).toHaveURL(/\/rtc-practice\/.+/);
+    
+    // Room ID should be populated in the input
+    const roomIdInput = page.getByLabel('Room');
+    const roomId = await roomIdInput.inputValue();
+    expect(roomId).toBeTruthy();
+    expect(roomId.length).toBeGreaterThan(10);
+  });
+
+  test('user can copy room link', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    
+    await page.goto('/rooms');
+    await page.getByRole('button', { name: /create room/i }).click();
+    
+    // Copy link button should work
+    await page.getByRole('button', { name: /copy link/i }).click();
+    
+    // Verify clipboard contains room URL
+    const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
+    expect(clipboardText).toContain('/rtc-practice/');
+  });
+
+  test('user can navigate from Home to Rooms', async ({ page }) => {
+    await page.goto('/');
+    
+    await page.getByRole('link', { name: /rooms/i }).click();
+    
+    await expect(page).toHaveURL('/rooms');
+    await expect(page.getByRole('heading', { name: /rooms/i })).toBeVisible();
+  });
+});
+
+
+Test Suite 7: e2e/webrtc-connection.spec.ts
+--------------------------------------------
+import { test, expect } from '@playwright/test';
+
+test.describe('WebRTC Connection', () => {
+  test.slow(); // Mark as slow test (can take 10-30 seconds)
+
+  test('two users can establish connection', async ({ browser }) => {
+    // Create two separate browser contexts (simulate 2 users)
+    const contextA = await browser.newContext({
+      permissions: ['camera', 'microphone']
+    });
+    const contextB = await browser.newContext({
+      permissions: ['camera', 'microphone']
+    });
+
+    const pageA = await contextA.newPage();
+    const pageB = await contextB.newPage();
+
+    try {
+      // User A creates room
+      await pageA.goto('/rooms');
+      await pageA.getByLabel('Name').fill('Alice');
+      await pageA.getByRole('button', { name: /create room/i }).click();
+      
+      // Get the room URL
+      const roomUrl = pageA.url();
+      console.log('Room URL:', roomUrl);
+
+      // User A starts camera
+      await pageA.getByRole('button', { name: /start camera/i }).click();
+      
+      // User B joins the same room
+      await pageB.goto(roomUrl);
+      await pageB.getByLabel('Name').fill('Bob');
+      await pageB.getByRole('button', { name: /start camera/i }).click();
+
+      // Wait for connection (can take several seconds)
+      await expect(pageA.getByText(/connected/i)).toBeVisible({ timeout: 15000 });
+      await expect(pageB.getByText(/connected/i)).toBeVisible({ timeout: 15000 });
+
+      // Verify logs show successful connection
+      const logsA = await pageA.getByLabel('Logs').textContent();
+      const logsB = await pageB.getByLabel('Logs').textContent();
+      
+      expect(logsA).toContain('Peer connection: connected');
+      expect(logsB).toContain('Peer connection: connected');
+
+    } finally {
+      await contextA.close();
+      await contextB.close();
+    }
+  });
+
+  test('connection survives network interruption', async ({ browser }) => {
+    // Simulate network disruption
+    const context = await browser.newContext({
+      permissions: ['camera', 'microphone']
+    });
+    const page = await context.newPage();
+
+    // TODO: Implement network throttling test
+    // This requires setting up connection, throttling network, then verifying recovery
+  });
+});
+
+
+Test Suite 8: e2e/device-selection.spec.ts
+-------------------------------------------
+import { test, expect } from '@playwright/test';
+
+test.describe('Media Device Selection', () => {
+  test('user can enumerate and select camera', async ({ page, context }) => {
+    await context.grantPermissions(['camera', 'microphone']);
+    
+    await page.goto('/rtc-practice');
+    
+    // Refresh devices
+    await page.getByRole('button', { name: /refresh devices/i }).click();
+    
+    // Check camera dropdown has options
+    const cameraSelect = page.getByLabel('Camera');
+    const cameraOptions = await cameraSelect.locator('option').count();
+    
+    // Should have at least "Default" option
+    expect(cameraOptions).toBeGreaterThan(0);
+  });
+
+  test('user can start and stop camera', async ({ page, context }) => {
+    await context.grantPermissions(['camera']);
+    
+    await page.goto('/rtc-practice');
+    
+    // Start camera
+    await page.getByRole('button', { name: /start camera/i }).click();
+    
+    // Verify log shows camera started
+    await expect(page.getByText(/camera started/i)).toBeVisible({ timeout: 5000 });
+    
+    // Stop camera
+    await page.getByRole('button', { name: /stop camera/i }).click();
+    
+    await expect(page.getByText(/camera stopped/i)).toBeVisible();
+  });
+
+  test('user can toggle screen sharing', async ({ page, context }) => {
+    await context.grantPermissions(['camera', 'microphone']);
+    
+    await page.goto('/rtc-practice');
+    
+    // Click share screen button
+    await page.getByRole('button', { name: /share screen/i }).click();
+    
+    // Browser will show screen picker - in headless mode this might not work
+    // In headed mode, you'd need to manually select or mock the selection
+  });
+});
+
+
+================================================================================
+PHASE 4: TEST EXECUTION STRATEGY (WEEK 3)
+================================================================================
+
+4.1 EXECUTION ORDER & FREQUENCY
+--------------------------------
+
+DAILY (During Active Development):
+- npm run test -- --watch
+  → Run unit tests in watch mode
+  → Immediate feedback on code changes
+
+PRE-COMMIT (Git Hook):
+- npm run test
+  → All unit tests must pass
+- npm run build
+  → TypeScript compilation must succeed
+- npm run format:check
+  → Code formatting must be consistent
+
+PRE-PULL REQUEST:
+- npm run test:coverage
+  → Coverage must meet thresholds (70%+)
+- npm run test:e2e -- --project=chromium
+  → E2E tests on Chrome must pass
+- npm run lint
+  → No linting errors
+
+PRE-PRODUCTION DEPLOYMENT:
+- npm run test:all
+  → All unit + E2E tests must pass
+- npm run test:e2e -- --project=firefox --project=webkit
+  → Cross-browser E2E verification
+- Manual testing on real devices:
+  → iOS Safari (iPhone)
+  → Chrome Android (Android phone)
+- Security audit:
+  → Firebase security rules validation
+  → Check for exposed API keys
+  → HTTPS enforcement
+
+
+4.2 BROWSER COVERAGE MATRIX
+----------------------------
+
+Test Type       | Chrome | Firefox | Safari | Mobile Chrome | Mobile Safari
+----------------|--------|---------|--------|---------------|---------------
+Unit Tests      |   ✅   |    ⚪   |   ⚪   |      ⚪       |      ⚪
+E2E Tests       |   ✅   |    ✅   |   ✅   |   Manual      |   Manual
+WebRTC Flow     |   ✅   |    ✅   |   ✅   |   Manual      |   Manual
+Device Enum     |   ✅   |    ✅   |   ✅   |   Manual      |   Manual
+
+Legend:
+✅ = Automated testing
+⚪ = Not required (runs in single browser)
+Manual = Real device testing required
+
+
+4.3 CI/CD PIPELINE (GITHUB ACTIONS)
+------------------------------------
+
+File: .github/workflows/test.yml
+--------------------------------
+name: Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: unittests
+      
+      - name: Build
+        run: npm run build
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      
+      - name: Run E2E tests
+        run: npm run test:e2e -- --project=${{ matrix.browser }}
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 7
+
+
+================================================================================
+PHASE 5: COVERAGE GOALS & METRICS
+================================================================================
+
+5.1 CODE COVERAGE TARGETS
+--------------------------
+
+Component/Module                          | Target | Priority | Rationale
+------------------------------------------|--------|----------|----------
+src/rtc/id.ts                             |  100%  |   P0     | Critical utility
+src/rtc/routing.ts                        |  100%  |   P0     | URL generation
+src/rtc/webrtc/ice.ts                     |   90%  |   P0     | ICE candidate handling
+src/rtc/webrtc/peerConnection.ts          |   85%  |   P0     | Core WebRTC logic
+src/rtc/media/combinedStream.ts           |   80%  |   P1     | Media stream handling
+src/rtc/signaling/firestoreRooms.ts       |   85%  |   P0     | Firestore integration
+src/pages/Rooms/Rooms.tsx                 |   80%  |   P1     | Room creation UI
+src/pages/RTCPractice/RTCPractice.tsx     |   70%  |   P1     | Main RTC page
+src/pages/RTCPractice/components/*        |   70%  |   P2     | UI components
+
+Overall Project Target: 75%+ coverage
+
+
+5.2 FUNCTIONAL COVERAGE CHECKLIST
+----------------------------------
+
+✅ PRE-PRODUCTION REQUIREMENTS (Must Pass):
+
+[ ] Room Creation & Navigation
+    [ ] User can create room from /rooms page
+    [ ] User can copy room link to clipboard
+    [ ] User can join room via URL
+    [ ] Room ID appears in browser URL
+
+[ ] WebRTC Connection
+    [ ] Two users can establish peer connection in Chrome
+    [ ] Two users can establish peer connection in Firefox
+    [ ] Two users can establish peer connection in Safari
+    [ ] Connection state changes are logged correctly
+    [ ] ICE candidates are exchanged via Firestore
+
+[ ] Media Streaming
+    [ ] Audio flows from User A to User B
+    [ ] Audio flows from User B to User A
+    [ ] Video flows from User A to User B
+    [ ] Video flows from User B to User A
+    [ ] Local video preview displays correctly
+    [ ] Remote video displays correctly
+
+[ ] Device Management
+    [ ] Camera devices can be enumerated
+    [ ] Microphone devices can be enumerated
+    [ ] User can select specific camera
+    [ ] User can select specific microphone
+    [ ] Screen sharing can be started
+    [ ] Screen sharing can be stopped
+
+[ ] Connection Resilience
+    [ ] Connection survives 5-second network interruption
+    [ ] Cleanup happens on page close (no memory leaks)
+    [ ] Multiple sequential connections work correctly
+
+[ ] Security & Permissions
+    [ ] Firestore security rules block unauthorized access
+    [ ] Camera permission is requested correctly
+    [ ] Microphone permission is requested correctly
+    [ ] Firebase API keys are not exposed in client code
+
+[ ] Mobile Browser Compatibility
+    [ ] Works on iOS Safari (latest)
+    [ ] Works on Chrome Android (latest)
+    [ ] Camera/mic permissions work on mobile
+    [ ] UI is responsive on mobile screens
+
+
+5.3 PERFORMANCE BENCHMARKS
+---------------------------
+
+Metric                              | Target      | Critical
+------------------------------------|-------------|----------
+Initial page load time              | < 2 seconds | < 3 sec
+Time to camera preview              | < 1 second  | < 2 sec
+WebRTC connection establishment     | < 5 seconds | < 10 sec
+Memory usage during 30-min call     | < 500 MB    | < 1 GB
+CPU usage during call (idle)        | < 15%       | < 30%
+Firestore signaling latency         | < 500 ms    | < 1 sec
+
+
+================================================================================
+PHASE 6: DEFECT MANAGEMENT & TRACKING
+================================================================================
+
+6.1 BUG SEVERITY CLASSIFICATION
+--------------------------------
+
+CRITICAL (P0) - Production Blocker:
+- WebRTC connection fails completely
+- Camera/microphone not accessible
+- Firestore signaling broken
+- Page crashes or infinite loop
+- Security vulnerability discovered
+
+HIGH (P1) - Major Impact:
+- Connection drops frequently
+- Audio/video quality severely degraded
+- Device selection not working
+- Memory leak during call
+- Cross-browser compatibility failure
+
+MEDIUM (P2) - Moderate Impact:
+- UI rendering issues
+- Log messages incorrect
+- Copy link button fails
+- Manual SDP flow broken
+
+LOW (P3) - Minor Impact:
+- Typos in UI text
+- CSS styling issues
+- Non-critical console warnings
+
+
+6.2 DEFECT TRACKING TEMPLATE
+-----------------------------
+
+Bug ID: #[number]
+Title: [Short description]
+Severity: [P0/P1/P2/P3]
+Status: [Open/In Progress/Resolved/Closed]
+Found in Phase: [Unit/Integration/E2E/Manual]
+Browser/Device: [Chrome 120, iOS 17 Safari, etc.]
+
+Description:
+[Detailed description of the issue]
+
+Steps to Reproduce:
+1. [Step 1]
+2. [Step 2]
+3. [Observed behavior]
+
+Expected Behavior:
+[What should happen]
+
+Actual Behavior:
+[What actually happens]
+
+Screenshots/Logs:
+[Attach relevant files]
+
+Environment:
+- OS: [Windows 11, macOS 14, etc.]
+- Browser: [Chrome 120.0.6099.109]
+- Node version: [18.18.0]
+- Firebase SDK: [12.7.0]
+
+
+================================================================================
+PHASE 7: PERFORMANCE & SECURITY TESTING (WEEK 4)
+================================================================================
+
+7.1 PERFORMANCE TESTING
+------------------------
+
+Test 1: Load Testing (Concurrent Rooms)
+Goal: Verify system handles 10 concurrent active rooms
+
+Method:
+1. Use Playwright to spawn 20 browser contexts (10 rooms × 2 users)
+2. Establish connections simultaneously
+3. Monitor:
+   - Firestore read/write operations
+   - Memory usage across all contexts
+   - CPU usage
+   - Network bandwidth
+
+Success Criteria:
+- All 10 rooms connect successfully within 30 seconds
+- No crashes or errors
+- Memory per tab < 200 MB
+
+
+Test 2: Endurance Testing (Long-duration Call)
+Goal: Ensure no memory leaks during extended call
+
+Method:
+1. Establish 2-user connection
+2. Maintain call for 1 hour
+3. Monitor memory usage every 5 minutes
+
+Success Criteria:
+- Memory increase < 100 MB over 1 hour
+- No connection drops
+- Audio/video quality remains stable
+
+
+Test 3: Network Resilience Testing
+Goal: Test connection stability under poor network
+
+Method:
+1. Establish connection
+2. Use Playwright to throttle network:
+   - 3G speed (750 KB/s down, 250 KB/s up)
+   - Latency: 100ms
+   - Packet loss: 1%
+3. Verify call quality degradation is graceful
+
+Success Criteria:
+- Connection remains active
+- No crashes or errors
+- Audio quality degrades but remains usable
+
+
+7.2 SECURITY TESTING
+---------------------
+
+Test 1: Firestore Security Rules Validation
+File: firestore.rules
+----------------------
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Rooms collection
+    match /rooms/{roomId} {
+      // Anyone can read room documents
+      allow read: if true;
+      
+      // Only authenticated users can create rooms
+      allow create: if request.auth != null;
+      
+      // Only room creator can update/delete
+      allow update, delete: if request.auth != null 
+                              && request.auth.uid == resource.data.createdBy;
+      
+      // ICE candidates subcollections
+      match /callerCandidates/{candidateId} {
+        allow read, write: if true; // Public for signaling
+      }
+      match /calleeCandidates/{candidateId} {
+        allow read, write: if true; // Public for signaling
+      }
+    }
+  }
+}
+
+Test Method:
+1. Start Firebase emulators
+2. Run: firebase emulators:exec "npm run test:security"
+3. Verify unauthorized access is blocked
+
+
+Test 2: Environment Variable Security Audit
+Checklist:
+- [ ] .env file is in .gitignore
+- [ ] Firebase API keys are not hardcoded in source
+- [ ] No secrets in git history
+- [ ] Production keys differ from development keys
+- [ ] API key restrictions configured in Firebase console
+
+
+Test 3: HTTPS Enforcement
+Verify:
+- [ ] Vite dev server uses HTTPS (optional for dev)
+- [ ] Production deployment forces HTTPS
+- [ ] Mixed content warnings are resolved
+- [ ] CORS policies are correctly configured
+
+
+7.3 ACCESSIBILITY TESTING
+--------------------------
+
+Manual Checklist:
+- [ ] All buttons have accessible labels
+- [ ] Video elements have aria-labels
+- [ ] Form inputs have associated labels
+- [ ] Keyboard navigation works (Tab, Enter, Escape)
+- [ ] Screen reader can navigate the interface
+- [ ] Color contrast meets WCAG AA standards
+- [ ] Focus indicators are visible
+
+Automated Tools:
+- axe-core via Playwright
+- Lighthouse accessibility audit
+
+
+================================================================================
+PHASE 8: PRE-PRODUCTION CHECKLIST
+================================================================================
+
+8.1 FINAL VERIFICATION CHECKLIST
+---------------------------------
+
+CODE QUALITY:
+[ ] All unit tests passing (npm run test)
+[ ] Code coverage > 75% overall
+[ ] All E2E tests passing across 3 browsers
+[ ] No ESLint errors or warnings
+[ ] Code formatted with Prettier
+[ ] TypeScript compilation succeeds with no errors
+[ ] No console errors in browser (except expected WebRTC warnings)
+
+FUNCTIONALITY:
+[ ] Room creation works in all browsers
+[ ] WebRTC connection established in all browsers
+[ ] Audio/video streaming verified manually
+[ ] Device selection working
+[ ] Screen sharing working (desktop browsers)
+[ ] Mobile browser testing completed (iOS + Android)
+[ ] Cleanup/disconnect working correctly
+[ ] No memory leaks detected
+
+PERFORMANCE:
+[ ] Page load time < 2 seconds
+[ ] Connection time < 5 seconds
+[ ] 30-minute call completed without issues
+[ ] Memory usage within acceptable limits
+[ ] No significant CPU spikes
+
+SECURITY:
+[ ] Firestore security rules deployed and tested
+[ ] No API keys exposed in client code
+[ ] HTTPS enforced in production
+[ ] Firebase App Check configured (optional but recommended)
+[ ] No vulnerable dependencies (npm audit)
+
+DOCUMENTATION:
+[ ] README updated with setup instructions
+[ ] Firebase setup documented
+[ ] Testing instructions included
+[ ] Known issues documented
+[ ] Browser compatibility matrix documented
+
+
+8.2 PRODUCTION DEPLOYMENT PLAN
+-------------------------------
+
+Step 1: Pre-deployment
+- Run full test suite (unit + E2E)
+- Generate and review test coverage report
+- Perform final manual testing
+- Backup current production database (if applicable)
+
+Step 2: Deployment
+- Build production bundle: npm run build
+- Deploy to hosting (Netlify, Vercel, Firebase Hosting)
+- Deploy Firestore security rules
+- Verify environment variables in production
+
+Step 3: Post-deployment Verification
+- Smoke test critical paths in production
+- Monitor Firebase console for errors
+- Check browser console for unexpected errors
+- Test on real devices (mobile)
+
+Step 4: Monitoring
+- Set up Firebase performance monitoring
+- Configure error tracking (Sentry, LogRocket)
+- Monitor Firestore quotas and usage
+- Set up uptime monitoring
+
+
+8.3 ROLLBACK PLAN
+-----------------
+
+If Critical Issues Found After Deployment:
+1. Immediately revert to previous production build
+2. Disable new features via feature flags (if implemented)
+3. Communicate issue to users via status page
+4. Investigate root cause
+5. Fix in development environment
+6. Re-test thoroughly
+7. Redeploy when verified
+
+
+================================================================================
+APPENDIX A: TESTING METRICS & REPORTING
+================================================================================
+
+A.1 WEEKLY TEST EXECUTION REPORT TEMPLATE
+------------------------------------------
+
+Week: [Week Number]
+Date Range: [Start Date] - [End Date]
+
+Test Execution Summary:
+- Total Test Cases: [number]
+- Executed: [number]
+- Passed: [number]
+- Failed: [number]
+- Blocked: [number]
+- Not Run: [number]
+
+Pass Rate: [percentage]%
+
+Coverage Report:
+- Line Coverage: [percentage]%
+- Branch Coverage: [percentage]%
+- Function Coverage: [percentage]%
+
+Defects Summary:
+- New Bugs: [number]
+- P0 Bugs: [number]
+- P1 Bugs: [number]
+- P2 Bugs: [number]
+- Bugs Fixed: [number]
+- Bugs Remaining: [number]
+
+Blocked Items:
+[List any blockers preventing test execution]
+
+Risks:
+[List any risks to quality or timeline]
+
+Next Week Focus:
+[Planned testing activities]
+
+
+================================================================================
+APPENDIX B: COMMON WEBRTC TESTING GOTCHAS
+================================================================================
+
+1. PERMISSIONS IN AUTOMATED TESTS
+Problem: Browser permissions don't work the same in headless mode
+Solution: Use context.grantPermissions() in Playwright
+
+2. ICE CANDIDATE TIMING
+Problem: Candidates may arrive before remote description is set
+Solution: Use buffering mechanism (already implemented in ice.ts)
+
+3. STUN SERVER RELIABILITY
+Problem: Public STUN servers can be unreliable
+Solution: Use multiple STUN servers; consider dedicated TURN server
+
+4. MOBILE TESTING LIMITATIONS
+Problem: Real devices behave differently than emulators
+Solution: Always test on physical iOS and Android devices before production
+
+5. CLEANUP IMPORTANCE
+Problem: Forgotten cleanup causes memory leaks in long sessions
+Solution: Always stop tracks and close peer connections on unmount
+
+6. FIRESTORE EMULATOR DIFFERENCES
+Problem: Emulator security rules may behave slightly differently
+Solution: Test in real Firebase project before final production deploy
+
+
+================================================================================
+APPENDIX C: USEFUL COMMANDS QUICK REFERENCE
+================================================================================
+
+DEVELOPMENT:
+npm run dev                          # Start dev server
+npm run build                        # Production build
+npm run preview                      # Preview production build
+
+TESTING:
+npm run test                         # Run unit tests once
+npm run test:watch                   # Run unit tests in watch mode
+npm run test:ui                      # Open Vitest UI
+npm run test:coverage                # Generate coverage report
+npm run test:e2e                     # Run all E2E tests
+npm run test:e2e:ui                  # Open Playwright UI
+npm run test:e2e:debug               # Debug E2E tests
+npm run test:e2e -- --project=chromium   # Run E2E in specific browser
+npm run test:all                     # Run all tests (unit + E2E)
+
+FIREBASE:
+npm run firebase:emulators           # Start Firebase emulators
+firebase deploy --only firestore:rules   # Deploy security rules
+firebase deploy --only hosting       # Deploy to Firebase hosting
+
+CODE QUALITY:
+npm run lint                         # Run ESLint
+npm run format                       # Format code with Prettier
+npm run format:check                 # Check code formatting
+npm audit                            # Check for vulnerable dependencies
+
+PLAYWRIGHT SPECIFIC:
+npx playwright test --headed         # Run with browser visible
+npx playwright test --debug          # Debug mode with inspector
+npx playwright codegen               # Generate test code interactively
+npx playwright show-report           # View HTML test report
+
+
+================================================================================
+APPENDIX D: TESTING RESOURCES & DOCUMENTATION
+================================================================================
+
+OFFICIAL DOCUMENTATION:
+- Vitest: https://vitest.dev/
+- Playwright: https://playwright.dev/
+- React Testing Library: https://testing-library.com/react
+- Firebase Emulator Suite: https://firebase.google.com/docs/emulator-suite
+- WebRTC: https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API
+
+WEBRTC TESTING RESOURCES:
+- WebRTC Troubleshooting: chrome://webrtc-internals
+- ICE Test Tool: https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
+- STUN/TURN Test: https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
+
+TESTING BEST PRACTICES:
+- AAA Pattern (Arrange-Act-Assert)
+- Test one thing per test
+- Use descriptive test names
+- Mock external dependencies
+- Clean up after tests
+- Avoid test interdependencies
+
+
+================================================================================
+END OF STLC PLAN
+================================================================================
+
+This document provides a complete roadmap for testing the JoFamily WebRTC
+project from development through production deployment. Update this plan as
+the project evolves and new features are added.
+
+Last Updated: January 15, 2026
+Version: 1.0

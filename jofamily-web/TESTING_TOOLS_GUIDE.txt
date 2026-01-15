@@ -1,0 +1,1166 @@
+================================================================================
+TESTING TOOLS GUIDE: SETUP & USAGE DOCUMENTATION
+================================================================================
+
+PROJECT: JoFamily WebRTC
+Testing Stack Installation & Configuration Guide
+Date: January 15, 2026
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. Installation Overview
+2. Individual Tool Guides
+3. Configuration Setup
+4. Writing Your First Tests
+5. Running Tests
+6. Troubleshooting
+
+
+================================================================================
+1. INSTALLATION OVERVIEW
+================================================================================
+
+1.1 INSTALLED PACKAGES & THEIR PURPOSE
+--------------------------------------
+
+Package                          | Version | Purpose
+---------------------------------|---------|------------------------------------------------------
+vitest                          | Latest  | Fast unit test framework (Vite-native)
+@vitest/ui                      | Latest  | Visual UI for test results
+@vitest/coverage-v8             | Latest  | Code coverage reporting
+@testing-library/react          | Latest  | React component testing utilities
+@testing-library/jest-dom       | Latest  | Custom DOM matchers for assertions
+@testing-library/user-event     | Latest  | User interaction simulation
+jsdom                           | Latest  | DOM implementation for Node.js
+
+
+1.2 INSTALLATION COMMANDS EXECUTED
+-----------------------------------
+
+Step 1: Unit Testing Framework
+$ npm install -D vitest @vitest/ui @vitest/coverage-v8
+
+  ✓ vitest: Fast unit test runner (drops in for Jest)
+  ✓ @vitest/ui: Visual dashboard for test results
+  ✓ @vitest/coverage-v8: Code coverage with v8 provider
+
+
+Step 2: React Component Testing
+$ npm install -D @testing-library/react @testing-library/jest-dom
+
+  ✓ @testing-library/react: React component rendering & querying
+  ✓ @testing-library/jest-dom: Matchers like toBeInTheDocument()
+
+
+Step 3: User Interaction Simulation
+$ npm install -D @testing-library/user-event jsdom
+
+  ✓ @testing-library/user-event: Realistic user interactions (clicks, typing)
+  ✓ jsdom: Browser DOM environment for Node.js tests
+
+
+1.3 INSTALLATION VERIFICATION
+------------------------------
+
+Verify all packages installed correctly (Windows PowerShell):
+
+$ npm list vitest @vitest/ui @vitest/coverage-v8 `
+             @testing-library/react @testing-library/jest-dom `
+             @testing-library/user-event jsdom
+
+Or on Linux/Mac (bash):
+
+$ npm list vitest @vitest/ui @vitest/coverage-v8 \
+             @testing-library/react @testing-library/jest-dom \
+             @testing-library/user-event jsdom
+
+Simplified version (all on one line):
+
+$ npm list vitest @vitest/ui @vitest/coverage-v8 @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
+npm
+Should see output like:
+  jofamily-web@1.0.0
+  ├── @testing-library/jest-dom@6.1.5
+  ├── @testing-library/react@14.1.2
+  ├── @testing-library/user-event@14.5.1
+  ├── @vitest/coverage-v8@1.0.4
+  ├── @vitest/ui@1.0.4
+  ├── jsdom@23.0.1
+  └── vitest@1.0.4
+
+
+================================================================================
+2. INDIVIDUAL TOOL GUIDES
+================================================================================
+
+2.1 VITEST - UNIT TEST FRAMEWORK
+---------------------------------
+
+WHAT IT DOES:
+- Lightning-fast unit test runner built on Vite
+- Runs tests in Node.js environment
+- Supports ES modules natively
+- Jest-compatible API (familiar if you know Jest)
+- Smart test re-running on file changes
+
+WHY USE IT:
+- ⚡ 10-100x faster than Jest
+- 📦 Native Vite integration (no extra bundling)
+- 🔄 Instant feedback during development
+- 🎯 Better TypeScript support
+- 📊 Built-in coverage reporting
+
+BASIC USAGE:
+
+File: src/utils/__tests__/example.test.ts
+-----------------------------------------
+import { describe, it, expect } from 'vitest';
+import { add } from '../math';
+
+describe('Math utilities', () => {
+  it('adds two numbers correctly', () => {
+    expect(add(2, 3)).toBe(5);
+  });
+
+  it('handles negative numbers', () => {
+    expect(add(-5, 3)).toBe(-2);
+  });
+});
+
+RUN TESTS:
+$ npm run test                    # Run once
+$ npm run test -- --watch        # Watch mode
+$ npm run test -- src/utils      # Specific folder
+$ npm run test -- example.test   # Specific file
+
+
+2.2 @VITEST/UI - VISUAL TEST DASHBOARD
+---------------------------------------
+
+WHAT IT DOES:
+- Provides graphical dashboard for test results
+- Shows real-time test execution progress
+- Displays code coverage visualization
+- Filters tests by status (passed/failed/pending)
+- Interactive debugging interface
+
+WHY USE IT:
+- 👁️ See all tests at once
+- 🎯 Quickly identify failing tests
+- 📊 Visual coverage maps
+- 🔍 Filter and search tests
+- ⏱️ Performance metrics per test
+
+USAGE:
+
+File: vitest.config.ts (configuration needed - see Section 3)
+--------------------------------------------------------------
+export default defineConfig({
+  test: {
+    ui: true,  // Enable UI by default
+  },
+});
+
+RUN WITH UI:
+$ npm run test:ui
+
+Or activate via CLI:
+$ npx vitest --ui
+
+ACCESSING THE UI:
+- Opens at http://localhost:51204/__vitest__/
+- Shows real-time test execution
+- Click on failed tests to see errors
+- Coverage tab shows line/branch coverage
+
+
+2.3 @VITEST/COVERAGE-V8 - CODE COVERAGE REPORTS
+------------------------------------------------
+
+WHAT IT DOES:
+- Measures test coverage using V8 coverage
+- Shows line, branch, function, and statement coverage
+- Generates HTML reports
+- Supports coverage thresholds enforcement
+- Integrates with CI/CD pipelines
+
+WHY USE IT:
+- 📊 Ensure adequate test coverage
+- 🎯 Identify untested code paths
+- 🔄 Track coverage improvements over time
+- 🚫 Fail builds if coverage drops
+- 📈 Visual HTML reports
+
+USAGE:
+
+File: vitest.config.ts (configuration needed)
+----------------------------------------------
+export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      exclude: [
+        'node_modules/',
+        'src/tests/',
+        '**/*.config.ts',
+      ],
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 65,
+        statements: 70,
+      },
+    },
+  },
+});
+
+RUN COVERAGE REPORT:
+$ npm run test:coverage
+
+OUTPUT:
+- Console output with coverage percentages
+- HTML report in coverage/index.html
+- LCOV report for CI/CD integration
+
+INTERPRETING COVERAGE REPORT:
+
+Line Coverage:
+  - Percentage of lines executed during tests
+  - Example: 80% means 80 out of 100 lines were run
+
+Branch Coverage:
+  - Percentage of if/else branches tested
+  - Example: 75% means not all conditions tested
+
+Function Coverage:
+  - Percentage of functions called by tests
+  - Example: 85% means some functions not called
+
+Statement Coverage:
+  - Percentage of statements executed
+  - Similar to line coverage
+
+
+2.4 @TESTING-LIBRARY/REACT - REACT COMPONENT TESTING
+-----------------------------------------------------
+
+WHAT IT DOES:
+- Provides utilities to render and test React components
+- Queries elements by user-facing selectors (not implementation details)
+- Simulates user interactions
+- Encourages testing behavior, not structure
+
+WHY USE IT:
+- 🎯 Tests what users see and do (not internal state)
+- 🔍 Encourages accessible component design
+- 🛡️ Refactoring-resistant (queries by role/label)
+- ♿ Built-in accessibility testing
+- 🚀 Forces better component APIs
+
+BASIC USAGE:
+
+File: src/pages/__tests__/Rooms.test.tsx
+----------------------------------------
+import { render, screen } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import Rooms from '../Rooms';
+
+describe('Rooms Component', () => {
+  it('renders heading', () => {
+    render(
+      <BrowserRouter>
+        <Rooms />
+      </BrowserRouter>
+    );
+    
+    // Query by heading role
+    const heading = screen.getByRole('heading', { name: /rooms/i });
+    expect(heading).toBeInTheDocument();
+  });
+
+  it('renders create button', () => {
+    render(
+      <BrowserRouter>
+        <Rooms />
+      </BrowserRouter>
+    );
+    
+    // Query by button role
+    const button = screen.getByRole('button', { name: /create/i });
+    expect(button).toBeInTheDocument();
+  });
+});
+
+COMMON QUERIES:
+
+// By role (PREFERRED - most accessible)
+screen.getByRole('button', { name: /Create/i })
+screen.getByRole('heading', { name: /Welcome/i })
+screen.getByRole('textbox', { name: /email/i })
+
+// By label text
+screen.getByLabelText(/Username/i)
+screen.getByLabelText(/Password/i)
+
+// By placeholder text
+screen.getByPlaceholderText(/Enter room ID/i)
+
+// By text content (last resort)
+screen.getByText(/Save changes/i)
+
+// All queries have variants:
+getBy*()     // Throws error if not found
+queryBy*()   // Returns null if not found
+findBy*()    // Async - waits for element
+
+
+2.5 @TESTING-LIBRARY/JEST-DOM - CUSTOM MATCHERS
+------------------------------------------------
+
+WHAT IT DOES:
+- Extends expect() with DOM-specific matchers
+- Makes assertions more readable and semantic
+- Checks DOM state and visibility
+- Improves test failure messages
+
+WHY USE IT:
+- 📝 More readable test assertions
+- 🎯 DOM-specific checks (not generic)
+- 💬 Better error messages
+- ♿ Encourages accessibility testing
+
+USAGE:
+
+File: src/tests/setup.ts (import in setup file)
+-----------------------------------------------
+import '@testing-library/jest-dom';
+
+AVAILABLE MATCHERS:
+
+// Visibility checks
+expect(element).toBeInTheDocument()
+expect(element).toBeVisible()
+expect(element).toBeEmptyDOMElement()
+
+// Content checks
+expect(element).toHaveTextContent(/text/)
+expect(element).toHaveClass('active')
+
+// Form checks
+expect(input).toHaveValue('text')
+expect(input).toBeDisabled()
+expect(input).toBeEnabled()
+expect(checkbox).toBeChecked()
+
+// Attribute checks
+expect(element).toHaveAttribute('href', '/rooms')
+expect(element).toHaveStyle({ color: 'red' })
+
+EXAMPLE TEST:
+
+it('submit button is disabled initially', () => {
+  render(<SignupForm />);
+  
+  const submitBtn = screen.getByRole('button', { name: /submit/i });
+  
+  expect(submitBtn).toBeDisabled();
+});
+
+it('submit button enables after form filled', async () => {
+  const user = userEvent.setup();
+  render(<SignupForm />);
+  
+  await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+  await user.type(screen.getByLabelText(/password/i), 'Password123');
+  
+  const submitBtn = screen.getByRole('button', { name: /submit/i });
+  expect(submitBtn).toBeEnabled();
+});
+
+
+2.6 @TESTING-LIBRARY/USER-EVENT - USER INTERACTION SIMULATION
+-------------------------------------------------------------
+
+WHAT IT DOES:
+- Simulates realistic user interactions
+- More accurate than fireEvent (fires all events in order)
+- Types text character by character (triggers onChange events)
+- Handles focus, blur, keyboard modifiers
+- Respects disabled state
+
+WHY USE IT OVER FIREEVENT:
+- 🎯 Realistic event sequence (like real users)
+- ⌨️ Properly handles keyboard events
+- 🖱️ Respects element properties (disabled, readonly)
+- 🔄 Awaitable (async operations supported)
+- 🛡️ Better for accessibility testing
+
+BASIC USAGE:
+
+File: src/pages/__tests__/Login.test.tsx
+----------------------------------------
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import Login from '../Login';
+
+describe('Login Form', () => {
+  it('user can type email', async () => {
+    const user = userEvent.setup();
+    render(<Login />);
+    
+    const emailInput = screen.getByLabelText(/email/i);
+    
+    // Type email (character by character)
+    await user.type(emailInput, 'test@example.com');
+    
+    expect(emailInput).toHaveValue('test@example.com');
+  });
+
+  it('user can click button', async () => {
+    const user = userEvent.setup();
+    const handleClick = vi.fn();
+    
+    render(<button onClick={handleClick}>Click me</button>);
+    
+    const button = screen.getByRole('button', { name: /click me/i });
+    await user.click(button);
+    
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('user can submit form', async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+    
+    render(
+      <form onSubmit={handleSubmit}>
+        <input aria-label="email" />
+        <button type="submit">Submit</button>
+      </form>
+    );
+    
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+    
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+  });
+});
+
+COMMON USER INTERACTIONS:
+
+// Type text
+await user.type(element, 'Hello')
+
+// Click element
+await user.click(element)
+
+// Double-click
+await user.dblClick(element)
+
+// Triple-click (select all)
+await user.tripleClick(element)
+
+// Keyboard keys
+await user.keyboard('{Enter}')
+await user.keyboard('{Control>}a{/Control}')  // Ctrl+A
+await user.keyboard('{Tab}')
+
+// Clear input
+await user.clear(element)
+
+// Select option
+await user.selectOptions(selectElement, ['option1', 'option2'])
+
+// Upload file
+await user.upload(inputElement, file)
+
+
+2.7 JSDOM - DOM ENVIRONMENT FOR NODE.JS
+----------------------------------------
+
+WHAT IT DOES:
+- Simulates browser DOM in Node.js
+- Provides window, document, localStorage objects
+- Runs tests without Chromium/Firefox/Safari
+- Fast test execution (no real browser overhead)
+
+WHY USE IT:
+- ⚡ Tests run 100x faster than real browsers
+- 📦 No browser installation needed
+- 🔄 Perfect for CI/CD pipelines
+- 🎯 Unit/component testing (E2E is separate)
+
+CONFIGURATION:
+
+File: vitest.config.ts
+----------------------
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    environment: 'jsdom',  // Use jsdom for DOM tests
+    // Optional: use 'node' for non-DOM tests
+  },
+});
+
+WHAT'S AVAILABLE:
+
+✓ window object
+✓ document object
+✓ DOM methods (getElementById, querySelector, etc.)
+✓ Event listeners and handlers
+✓ localStorage, sessionStorage
+✓ setTimeout, setInterval
+✓ fetch API (basic)
+
+✗ Media devices (getUserMedia, enumerateDevices)
+✗ WebRTC APIs (RTCPeerConnection, RTCDataChannel)
+✗ Canvas rendering (limited)
+✗ Third-party browser extensions
+
+MOCKING BROWSER APIS:
+
+For WebRTC (not available in jsdom):
+
+File: src/tests/setup.ts
+------------------------
+import { vi } from 'vitest';
+
+global.navigator.mediaDevices = {
+  getUserMedia: vi.fn().mockResolvedValue({
+    getTracks: () => [],
+  }),
+  enumerateDevices: vi.fn().mockResolvedValue([]),
+  getDisplayMedia: vi.fn().mockResolvedValue({
+    getTracks: () => [],
+  }),
+};
+
+global.RTCPeerConnection = vi.fn(() => ({
+  addTrack: vi.fn(),
+  removeTrack: vi.fn(),
+  addIceCandidate: vi.fn(),
+  createOffer: vi.fn().mockResolvedValue({}),
+  createAnswer: vi.fn().mockResolvedValue({}),
+  setLocalDescription: vi.fn(),
+  setRemoteDescription: vi.fn(),
+}));
+
+
+================================================================================
+3. CONFIGURATION SETUP
+================================================================================
+
+3.1 CREATE VITEST.CONFIG.TS
+---------------------------
+
+File: vitest.config.ts (project root)
+--------------------------------------
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
+
+export default defineConfig({
+  plugins: [react()],
+  
+  test: {
+    // Test environment
+    environment: 'jsdom',
+    
+    // Global test utilities (describe, it, expect)
+    globals: true,
+    
+    // Setup files run before tests
+    setupFiles: './src/tests/setup.ts',
+    
+    // Include test files
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    
+    // Exclude from test discovery
+    exclude: ['node_modules', 'dist', 'cypress', 'temp'],
+    
+    // Coverage configuration
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov', 'json'],
+      exclude: [
+        'node_modules/',
+        'src/tests/',
+        '**/*.config.ts',
+        '**/types.ts',
+        '**/index.ts',
+      ],
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 65,
+        statements: 70,
+      },
+    },
+    
+    // UI configuration
+    ui: {
+      enabled: true,
+    },
+  },
+  
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+});
+
+
+3.2 CREATE SRC/TESTS/SETUP.TS
+-----------------------------
+
+File: src/tests/setup.ts
+------------------------
+import '@testing-library/jest-dom';
+import { expect, afterEach, vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+});
+
+// Mock navigator.mediaDevices (WebRTC)
+global.navigator.mediaDevices = {
+  getUserMedia: vi.fn().mockResolvedValue({
+    getTracks: () => [],
+    getAudioTracks: () => [],
+    getVideoTracks: () => [],
+  }),
+  enumerateDevices: vi.fn().mockResolvedValue([
+    {
+      deviceId: 'default',
+      kind: 'videoinput',
+      label: 'Mock Camera',
+      groupId: 'group1',
+      toJSON: () => ({}),
+    },
+  ]),
+  getDisplayMedia: vi.fn().mockResolvedValue({
+    getTracks: () => [],
+    getVideoTracks: () => [],
+  }),
+};
+
+// Mock RTCPeerConnection
+class MockRTCPeerConnection {
+  onicecandidate = null;
+  ontrack = null;
+  onconnectionstatechange = null;
+  oniceconnectionstatechange = null;
+  onsignalingstatechange = null;
+  
+  addTrack = vi.fn();
+  removeTrack = vi.fn();
+  addIceCandidate = vi.fn();
+  createOffer = vi.fn().mockResolvedValue({ type: 'offer', sdp: 'mock' });
+  createAnswer = vi.fn().mockResolvedValue({ type: 'answer', sdp: 'mock' });
+  setLocalDescription = vi.fn();
+  setRemoteDescription = vi.fn();
+  getStats = vi.fn().mockResolvedValue(new Map());
+  close = vi.fn();
+}
+
+global.RTCPeerConnection = MockRTCPeerConnection as any;
+
+// Mock RTCSessionDescription
+global.RTCSessionDescription = class {
+  constructor(public data: any) {}
+};
+
+// Mock RTCIceCandidate
+global.RTCIceCandidate = class {
+  constructor(public data: any) {}
+};
+
+// Mock MediaStream
+global.MediaStream = class {
+  getTracks() { return []; }
+  getAudioTracks() { return []; }
+  getVideoTracks() { return []; }
+  addTrack() {}
+  removeTrack() {}
+} as any;
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+global.localStorage = localStorageMock as any;
+
+// Mock Firestore (optional)
+vi.mock('firebase/firestore', () => ({
+  getFirestore: vi.fn(),
+  collection: vi.fn(),
+  doc: vi.fn(),
+  addDoc: vi.fn(),
+  setDoc: vi.fn(),
+  getDoc: vi.fn(),
+  deleteDoc: vi.fn(),
+  query: vi.fn(),
+  where: vi.fn(),
+  onSnapshot: vi.fn(),
+}));
+
+
+3.3 UPDATE PACKAGE.JSON SCRIPTS
+--------------------------------
+
+File: package.json (scripts section)
+------------------------------------
+
+Add or update the "scripts" section:
+
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "test:debug": "vitest --inspect-brk --inspect --single-thread",
+    
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    
+    "test:all": "npm run test && npm run test:e2e",
+    
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\""
+  }
+}
+
+
+================================================================================
+4. WRITING YOUR FIRST TESTS
+================================================================================
+
+4.1 TEST FILE STRUCTURE
+-----------------------
+
+File: src/rtc/__tests__/id.test.ts
+----------------------------------
+import { describe, it, expect } from 'vitest';
+import { generateRoomId } from '../id';
+
+// describe() = Test suite (groups related tests)
+describe('generateRoomId', () => {
+  
+  // it() = Individual test case
+  it('generates unique IDs', () => {
+    const id1 = generateRoomId();
+    const id2 = generateRoomId();
+    
+    // expect() = Assertion
+    expect(id1).not.toBe(id2);
+  });
+
+  it('generates non-empty string', () => {
+    const id = generateRoomId();
+    
+    expect(id).toBeTruthy();
+    expect(id.length).toBeGreaterThan(0);
+  });
+});
+
+
+4.2 REACT COMPONENT TEST EXAMPLE
+--------------------------------
+
+File: src/pages/__tests__/Rooms.test.tsx
+----------------------------------------
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { BrowserRouter } from 'react-router-dom';
+import Rooms from '../Rooms';
+
+describe('Rooms Component', () => {
+  const renderComponent = () => {
+    return render(
+      <BrowserRouter>
+        <Rooms />
+      </BrowserRouter>
+    );
+  };
+
+  it('renders with correct heading', () => {
+    renderComponent();
+    
+    const heading = screen.getByRole('heading', { name: /rooms/i });
+    expect(heading).toBeInTheDocument();
+  });
+
+  it('displays input fields', () => {
+    renderComponent();
+    
+    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/room/i)).toBeInTheDocument();
+  });
+
+  it('create button is clickable', async () => {
+    const user = userEvent.setup();
+    renderComponent();
+    
+    const createBtn = screen.getByRole('button', { name: /create/i });
+    expect(createBtn).toBeEnabled();
+    
+    await user.click(createBtn);
+    // Add assertions about what happens after click
+  });
+
+  it('join button disabled without room id', () => {
+    renderComponent();
+    
+    const joinBtn = screen.getByRole('button', { name: /join/i });
+    expect(joinBtn).toBeDisabled();
+  });
+
+  it('join button enabled after entering room id', async () => {
+    const user = userEvent.setup();
+    renderComponent();
+    
+    const roomInput = screen.getByLabelText(/room/i);
+    await user.type(roomInput, 'test-room-123');
+    
+    const joinBtn = screen.getByRole('button', { name: /join/i });
+    expect(joinBtn).toBeEnabled();
+  });
+});
+
+
+4.3 MOCKING EXAMPLE
+-------------------
+
+File: src/__tests__/example.mock.test.ts
+-----------------------------------------
+import { describe, it, expect, vi } from 'vitest';
+
+// Function to test
+const fetchUser = async (id: number) => {
+  const response = await fetch(`/api/users/${id}`);
+  return response.json();
+};
+
+describe('fetchUser with mocking', () => {
+  it('fetches user data', async () => {
+    // Mock the fetch function
+    global.fetch = vi.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({
+        id: 1,
+        name: 'Alice',
+        email: 'alice@example.com',
+      }),
+    });
+
+    const user = await fetchUser(1);
+
+    // Verify fetch was called
+    expect(global.fetch).toHaveBeenCalledWith('/api/users/1');
+    
+    // Verify data returned
+    expect(user).toEqual({
+      id: 1,
+      name: 'Alice',
+      email: 'alice@example.com',
+    });
+  });
+
+  it('handles fetch errors', async () => {
+    // Mock fetch to reject
+    global.fetch = vi.fn().mockRejectedValue(
+      new Error('Network error')
+    );
+
+    // Use expect().rejects for async errors
+    await expect(fetchUser(999)).rejects.toThrow('Network error');
+  });
+});
+
+
+================================================================================
+5. RUNNING TESTS
+================================================================================
+
+5.1 BASIC TEST COMMANDS
+-----------------------
+
+RUN TESTS ONCE:
+$ npm run test
+
+Expected output:
+  ✓ src/rtc/__tests__/id.test.ts (3)
+  ✓ src/pages/__tests__/Rooms.test.tsx (5)
+  
+  Test Files: 2 passed (2)
+  Tests: 8 passed (8)
+
+
+WATCH MODE (Re-run on file changes):
+$ npm run test:watch
+
+Controls:
+  • Press 'f' to filter by filename
+  • Press 'p' to filter by test name
+  • Press 't' to run only tests that match
+  • Press 'a' to run all tests
+  • Press 'q' to quit
+
+
+RUN SPECIFIC FILE:
+$ npm run test -- src/rtc/__tests__/id.test.ts
+
+
+RUN MATCHING PATTERN:
+$ npm run test -- --grep "generateRoomId"
+
+
+RUN WITH COVERAGE:
+$ npm run test:coverage
+
+Outputs:
+  • Console summary
+  • Detailed HTML report in coverage/index.html
+  • LCOV report in coverage/lcov.info
+
+
+5.2 UI DASHBOARD
+----------------
+
+OPEN TEST UI:
+$ npm run test:ui
+
+Access at: http://localhost:51204/__vitest__/
+
+FEATURES:
+- See all tests with status
+- Filter by status (passed/failed/pending)
+- Click test to see code
+- View coverage maps
+- Real-time test execution
+- Search tests by name
+
+
+5.3 DEBUG MODE
+--------------
+
+DEBUG TESTS:
+$ npm run test:debug
+
+Then:
+1. Open chrome://inspect in Chrome
+2. Click "Inspect" on the vitest process
+3. Set breakpoints in DevTools
+4. Step through code
+
+Or use IDE debugger:
+- VS Code: Create .vscode/launch.json with:
+
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "test:debug"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
+
+Then press F5 to debug.
+
+
+5.4 COVERAGE REPORTS
+--------------------
+
+GENERATE COVERAGE:
+$ npm run test:coverage
+
+VIEW HTML REPORT:
+1. Open coverage/index.html in browser
+2. See line-by-line coverage
+3. Identify untested code (highlighted in red)
+
+INTERPRET REPORT:
+
+Line 5: // Untested (red)
+Line 6: if (user) {   // Partially covered
+Line 7:   return true; // Tested
+Line 8: }
+
+This means the condition was sometimes true, sometimes false - good branch coverage.
+
+
+================================================================================
+6. TROUBLESHOOTING
+================================================================================
+
+6.1 COMMON ISSUES & SOLUTIONS
+------------------------------
+
+ISSUE 1: "Module not found" error in tests
+-------------------------------------------
+Error: Cannot find module '@/utils/math'
+
+Solution:
+Check vitest.config.ts has correct alias:
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  }
+
+Or use relative imports in tests:
+  import { add } from '../utils/math'
+
+
+ISSUE 2: jsdom not working, but tests need real browser APIs
+-------------------------------------------------------------
+Error: navigator.mediaDevices is undefined
+
+Solution:
+1. Mock it in src/tests/setup.ts (see Section 3.2)
+2. Or use { environment: 'node' } for that test file:
+   ✗ import.meta.config.test.environment = 'node'
+   ✓ Use @vitest/environment-node package
+
+
+ISSUE 3: Tests fail locally but pass in CI
+--------------------------------------------
+Cause: Timing issues, missing cleanup
+
+Solution:
+1. Use vi.clearAllMocks() between tests
+2. Add vi.resetAllMocks() in setup
+3. Use proper async/await (no unresolved promises)
+4. Check vitest.config.ts setupFiles is correct
+
+
+ISSUE 4: React component doesn't render in test
+------------------------------------------------
+Error: Expected element not found
+
+Possible causes:
+1. Component throws error (check console)
+2. Missing provider (Router, Context, etc.)
+3. Wrong query selector
+
+Solution:
+// Wrap component with required providers
+render(
+  <BrowserRouter>
+    <AuthProvider>
+      <MyComponent />
+    </AuthProvider>
+  </BrowserRouter>
+);
+
+// Use role queries (best practice)
+screen.getByRole('heading', { name: /title/i })
+
+// Debug what was rendered
+const { debug } = render(<MyComponent />);
+debug(); // Prints DOM structure
+
+
+ISSUE 5: Async test timing out
+-------------------------------
+Error: test timed out after 5000ms
+
+Solution:
+1. Increase timeout:
+   it('async test', { timeout: 10000 }, async () => { ... })
+
+2. Ensure promises resolve:
+   await expect(promise).resolves.toBe(value)
+
+3. Mock slow operations:
+   fetch = vi.fn().mockResolvedValue(...)
+
+
+ISSUE 6: Coverage threshold not met
+-----------------------------------
+Error: Coverage thresholds not met: lines 65%, expected 70%
+
+Solution:
+1. Write more tests to cover untested lines
+2. Lower threshold in vitest.config.ts (not recommended)
+3. Exclude third-party code from coverage
+
+coverage: {
+  exclude: [
+    'node_modules/',
+    'src/tests/',
+    '**/*.d.ts',
+  ],
+}
+
+
+ISSUE 7: userEvent.type() not working
+--------------------------------------
+Error: Text not appearing in input
+
+Solution:
+1. Ensure input is in DOM before interacting:
+   const input = screen.getByLabelText(/email/i);
+   
+2. Use userEvent correctly:
+   const user = userEvent.setup();
+   await user.type(input, 'text');
+
+3. Check input isn't disabled or readonly
+
+
+================================================================================
+7. NEXT STEPS
+================================================================================
+
+AFTER SETUP:
+
+1. Create vitest.config.ts with configuration
+2. Create src/tests/setup.ts with mocks
+3. Update package.json with test scripts
+4. Write first test file: src/__tests__/example.test.ts
+5. Run: npm run test
+6. Verify: npm run test:coverage
+
+RECOMMENDED READING:
+
+- Vitest Docs: https://vitest.dev/
+- Testing Library Docs: https://testing-library.com/react
+- Jest DOM Matchers: https://github.com/testing-library/jest-dom
+
+USEFUL COMMANDS CHEAT SHEET:
+
+npm run test               # Run all tests
+npm run test:watch        # Watch mode
+npm run test:ui           # Visual dashboard
+npm run test:coverage     # Coverage report
+npm run test:debug        # Debug mode
+npm run test -- --grep "pattern"  # Run matching tests
+npm run test -- file.test.ts      # Run specific file
+
+
+================================================================================
+END OF TESTING TOOLS GUIDE
+================================================================================

@@ -1,31 +1,25 @@
 # JoFamily Workspace
 
-Monorepo layout regrouped by domain (docs, web app, mobile, functions).
+Monorepo with React/Vite web app, React Native mobile app, Firebase functions, and organized documentation.
 
 ## Structure
-- docs/ — domain-sorted documentation (see docs/README.md)
-- web-app/ — React + Vite web client (TypeScript)
-- mobile/ — React Native + Expo app (TypeScript)
+- src/, public/ — React web app source
+- mobile/ — React Native + Expo app (see mobile/README.md)
 - functions/ — Firebase Cloud Functions
+- docs/ — domain-sorted documentation (see docs/README.md)
 - .firebase/, firebase.json — Firebase hosting/config
 
 ## Web App (Vite)
-- Location: web-app/
-- Commands (run inside web-app/):
-  - npm install
-  - npm run dev
-  - npm run build (outputs to web-app/dist)
-  - npm run test
-- Hosting: firebase.json points to web-app/dist (after build).
+- Install: `npm install`
+- Dev: `npm run dev`
+- Build: `npm run build` (outputs to dist/)
+- Test: `npm run test`
+- Deploy: `npm run build && firebase deploy --only hosting`
 
-## Mobile App (Expo)
-- Location: mobile/
-- Setup and run steps: see mobile/README.md (Windows walkthrough included).
+## Firebase Env Vars (required)
+Create `.env` in this folder (copy from `.env.example`). Vite expects `VITE_FIREBASE_*` keys.
 
 ## Documentation
 - Hub: docs/README.md (links by domain)
-- Guides and references live under docs/guides/.
+- WebRTC walkthrough: docs/guides/RTC.md
 
-## Notes
-- Old web root files (src, public, configs) now live under web-app/.
-- Delete stale node_modules at the repo root after reinstalling inside web-app/ to save space.

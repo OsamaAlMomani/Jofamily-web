@@ -1,88 +1,31 @@
-# React + TypeScript + Vite
+# JoFamily Workspace
 
-## RTC / WebRTC
+Monorepo layout regrouped by domain (docs, web app, mobile, functions).
 
-This repo includes an RTC learning page (`/rtc-practice`) plus notes on how WebRTC works and what it changes in your project.
+## Structure
+- docs/ — domain-sorted documentation (see docs/README.md)
+- web-app/ — React + Vite web client (TypeScript)
+- mobile/ — React Native + Expo app (TypeScript)
+- functions/ — Firebase Cloud Functions
+- .firebase/, firebase.json — Firebase hosting/config
 
-- Docs: [docs/RTC.md](docs/RTC.md)
+## Web App (Vite)
+- Location: web-app/
+- Commands (run inside web-app/):
+  - npm install
+  - npm run dev
+  - npm run build (outputs to web-app/dist)
+  - npm run test
+- Hosting: firebase.json points to web-app/dist (after build).
 
-## Firebase setup (required)
+## Mobile App (Expo)
+- Location: mobile/
+- Setup and run steps: see mobile/README.md (Windows walkthrough included).
 
-This project expects Firebase config to be provided via Vite env vars. If you don't add them, the app will throw:
-"Missing Firebase env vars: VITE_FIREBASE_..."
+## Documentation
+- Hub: docs/README.md (links by domain)
+- Guides and references live under docs/guides/.
 
-1) Create a `.env` file in the same folder as `package.json` (this folder).
-2) Copy from `.env.example` and fill values from Firebase Console → Project settings → General → Your apps (Web).
-3) Restart the dev server after changing `.env`.
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Notes
+- Old web root files (src, public, configs) now live under web-app/.
+- Delete stale node_modules at the repo root after reinstalling inside web-app/ to save space.

@@ -4,6 +4,8 @@ import Login from './pages/Login/Login';
 import CreateAcc from './pages/CreateAcc/CreateAcc';
 import RTCPractice from './pages/RTCPractice/RTCPractice';
 import Rooms from './pages/Rooms/Rooms';
+import Chat from './pages/Chat/Chat';
+import Calendar from './pages/Calendar/Calendar';
 import './styles/App.css';
 
 function App() {
@@ -15,6 +17,8 @@ function App() {
         <Route path="/signup" element={<CreateAcc />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/rtc-practice/:roomId?" element={<RTCPractice />} />
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/calendar" element={<Calendar />} />
       </Routes>
     </div>
   )

@@ -8,7 +8,7 @@ import {
   createUserWithEmailAndPassword,
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { auth } from '../firebase/firebase';
+import { auth } from '../../config/firebase';
 import { AuthContext } from './AuthContext';
 import type { AuthContextValue } from './AuthContext';
 

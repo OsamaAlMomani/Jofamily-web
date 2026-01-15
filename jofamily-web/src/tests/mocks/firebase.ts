@@ -91,7 +91,7 @@ export const setupFirebaseMocks = () => {
       .mockResolvedValue(mockUserCredential),
     signInWithPopup: vi.fn().mockResolvedValue(mockUserCredential),
     signOut: vi.fn().mockResolvedValue(undefined),
-    onAuthStateChanged: vi.fn((auth, callback) => {
+    onAuthStateChanged: vi.fn((_auth, callback) => {
       callback(mockUser);
       return vi.fn(); // unsubscribe function
     }),

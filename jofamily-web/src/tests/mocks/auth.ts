@@ -5,7 +5,7 @@
 
 import { vi } from 'vitest';
 import { mockUserCredential, mockUser } from './firebase';
-import type { AuthContextValue } from '../../auth/AuthContext';
+import type { AuthContextValue } from '../../core/auth';
 
 /**
  * Create a mock auth context provider

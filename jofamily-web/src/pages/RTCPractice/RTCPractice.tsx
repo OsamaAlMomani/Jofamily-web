@@ -8,7 +8,7 @@ import { RTCSignalingWorkbench } from './components/RTCSignalingWorkbench';
 import { RTCChatPanel } from './components/RTCChatPanel';
 import { RTCLogsPanel } from './components/RTCLogsPanel';
 import { RTCFooter } from './components/RTCFooter';
-import { db } from '../../firebase/firebase';
+import { db } from '../../config/firebase';
 import { generateRoomId } from '../../rtc/id';
 import { buildRtcRoomLink, buildRtcRoomPath } from '../../rtc/routing';
 import { buildLocalCombinedStream, setVideoElementStream } from '../../rtc/media/combinedStream';

@@ -1,7 +1,16 @@
 import { Link } from 'react-router-dom';
 import './Home.css';
+import { useAuth } from '../../core';
+import { features } from '../../constants/features';
 
 function Home() {
+  const { user, loading } = useAuth();
+  const userEmail = user?.email ?? 'Not logged in';
+  const loginStatus = user ? 'Logged in' : loading ? 'Checking session…' : 'Not logged in';
+  const avatarLetter = user?.email ? user.email.charAt(0).toUpperCase() : '?';
+  const authLink = user ? '/logout' : '/login';
+  const authLabel = user ? 'Logout' : 'Login';
+
   return (
     <>
       <header className="header">
@@ -11,14 +20,37 @@ function Home() {
               <li className="nav-item"><a href="#intro" className="nav-link">Home</a></li>
               <li className="nav-item"><a href="#contact" className="nav-link">Contact</a></li>
               <li className="nav-item"><a href="#features" className="nav-link">Features</a></li>
+              <li className="nav-item"><Link to="/chat" className="nav-link">Chat</Link></li>
+              <li className="nav-item"><Link to="/calendar" className="nav-link">Calendar</Link></li>
               <li className="nav-item"><Link to="/rooms" className="nav-link">Rooms</Link></li>
               <li className="nav-item"><Link to="/rtc-practice" className="nav-link">RTC Practice</Link></li>
             </ul>
           </nav>
+
+          <div className="auth-chip">
+            <div className={`auth-status ${user ? 'auth-status--ok' : 'auth-status--warn'}`}>
+              {loginStatus}
+            </div>
+            <div className="auth-avatar" title={userEmail}>
+              {avatarLetter}
+            </div>
+            <div className="auth-email" title={userEmail}>
+              {userEmail}
+            </div>
+            <Link to={authLink} className="auth-action">{authLabel}</Link>
+          </div>
         </div>
       </header>
 
       <main className="main-content">
+        <div className="login-alert">
+          {user ? (
+            <div className="alert alert--success">Logged in as <strong>{userEmail}</strong></div>
+          ) : (
+            <div className="alert alert--warn">You are not logged in. Please log in to access chat, calendar, and rooms.</div>
+          )}
+        </div>
+
         {/* Section 1: Introduction with split layout */}
         <section id="intro" className="section intro-section">
           <div className="split-container">
@@ -96,26 +128,26 @@ function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>Family Chat</td>
-                    <td>Connect with your loved ones</td>
-                    <td><span className="status-active">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>Photo Sharing</td>
-                    <td>Share memories instantly</td>
-                    <td><span className="status-active">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>Video Calls</td>
-                    <td>Face-to-face conversations</td>
-                    <td><span className="status-coming">Coming Soon</span></td>
-                  </tr>
-                  <tr>
-                    <td>Event Planning</td>
-                    <td>Organize family gatherings</td>
-                    <td><span className="status-active">Active</span></td>
-                  </tr>
+                  {features.map((feature) => {
+                    const statusClass = {
+                      'In Progress': 'status-in-progress',
+                      Planned: 'status-planned',
+                      Done: 'status-done',
+                      'Not Started': 'status-not-started',
+                    }[feature.status];
+
+                    return (
+                      <tr key={feature.key}>
+                        <td>{feature.name}</td>
+                        <td>{feature.description}</td>
+                        <td>
+                          <span className={`status-pill ${statusClass}`}>
+                            {feature.status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

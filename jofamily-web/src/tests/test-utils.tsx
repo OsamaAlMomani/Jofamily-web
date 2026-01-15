@@ -6,9 +6,9 @@
  */
 
 import React from 'react';
-import { render as rtlRender, RenderOptions } from '@testing-library/react';
+import { render as rtlRender, type RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthContext, type AuthContextValue } from '../auth/AuthContext';
+import { AuthContext, type AuthContextValue } from '../core/auth';
 import { createMockAuthContext } from './mocks/auth';
 
 /**

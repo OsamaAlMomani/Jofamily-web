@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { useAuth } from '../../auth/AuthContext';
-import { authErrorMessage } from '../../auth/authErrorMessage';
-import { db } from '../../firebase/firebase';
+import { useAuth, authErrorMessage } from '../../core';
+import { db } from '../../config/firebase';
 import './CreateAcc.css';
 
 export default function CreateAcc() {

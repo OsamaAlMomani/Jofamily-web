@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../auth/AuthContext';
-import { authErrorMessage } from '../../auth/authErrorMessage';
+import { useAuth, authErrorMessage } from '../../core';
 import './Login.css';
 
 function Login() {

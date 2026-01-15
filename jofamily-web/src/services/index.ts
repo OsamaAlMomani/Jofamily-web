@@ -6,3 +6,4 @@ export * from './safetyService';
 export * from './fileService';
 export * from './userService';
 export * from './crossFeatureService';
+	export * from './phase4Service';

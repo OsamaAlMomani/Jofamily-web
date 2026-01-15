@@ -35,28 +35,96 @@
   - Advanced moderation (admin delete, block users)
 
 ## Feature 2: Shared Family Calendar
-- Status: In Progress (live Firestore events)
+- Status: ✅ Complete (Phase 1 delivered)
 - Scope (Phase 1):
   - Create/list family events (title, date/time, location)
   - Color-coded events grouped by day
+  - Reminder options (15min, 30min, 1hr, 1 day before)
+  - Recurring events (weekly rule)
+  - Real-time conflict detection for overlapping events
+  - Event badges showing reminder, recurrence, attendee count
   - Auth guard for creation
 - Completed Today:
   - Calendar page with create form and grouped event list (`/calendar`)
   - Firestore-backed event service (`src/services/calendarService.ts`)
-  - Calendar types added (`src/types/calendar.ts`)
+  - Calendar types with reminder/recurrence fields (`src/types/calendar.ts`)
   - Navigation link and route wired; feature table auto-updates
-- Next Steps:
-  - Reminders/notifications
-  - Attendees and conflict detection
-  - Recurring events and ICS export
+  - Reminder dropdown (4 options)
+  - Recurring checkbox (weekly pattern)
+  - Conflict detection with warning display
+  - Event cards show badges for reminders, recurrence, attendees
+- Next Steps (Phase 2 - Future):
+  - Advanced recurrence patterns (daily, monthly, custom)
+  - Email/push notifications for reminders
+  - Attendee management UI (add/remove family members)
+  - ICS export for external calendars
+  - Calendar views (month, week, day)
+  - Event editing and deletion
 
 ## Feature 3: Family Task & Chore Management
-- Status: Planned
-- Notes: Assign/track chores with gamification (points, badges, leaderboards).
+- Status: ✅ Complete (Phase 1 delivered)
+- Scope (Phase 1):
+  - Create and assign tasks to family members
+  - Task priorities (low, medium, high)
+  - Task statuses (pending, in-progress, completed)
+  - Points system (customizable per task)
+  - Auto-award points on completion
+  - Leaderboard showing top 5 users by points
+  - Badge system (first-task, 10-tasks, 100-points, 500-points)
+  - User stats (total points, completed tasks, badges)
+  - Task filters (all, mine, assigned by me)
+  - Due dates and visual priority indicators
+- Completed Today:
+  - Tasks page with create form, task list, leaderboard (`/tasks`)
+  - Firestore-backed task service (`src/services/taskService.ts`)
+  - Task types with priority, status, points fields (`src/types/tasks.ts`)
+  - Stats tracking and badge auto-award logic
+  - Three-filter view (all/mine/assigned)
+  - Color-coded task cards by priority
+  - Start/Complete buttons for task workflow
+  - Real-time leaderboard updates
+  - Navigation and routing wired
+- Next Steps (Phase 2):
+  - Task assignment UI with family member picker
+  - More badges (streaks, categories, team achievements)
+  - Task categories/tags
+  - Task templates for recurring chores
+  - Push notifications for task assignments
+  - Team challenges and collaborative tasks
 
 ## Feature 4: Family Budget & Expenses
-- Status: Planned
-- Notes: Shared budgets, allowances, expense tracking, and insights.
+- Status: ✅ Complete (Phase 1 delivered)
+- Scope (Phase 1):
+  - Track family expenses with category, amount, description, date
+  - Create budgets with limits, categories, and periods (weekly/monthly)
+  - Manage allowances for family members with automatic scheduling
+  - Budget progress tracking with visual progress bars
+  - Expense insights (total spent, count, category breakdown, top category)
+  - Category system (food, transport, entertainment, utilities, health, education, other)
+  - Three-tab view: Expenses, Budgets, Allowances
+  - Real-time updates for all budget data
+  - Budget overrun detection with visual warnings
+- Completed Today:
+  - Budget page with sidebar forms and tabbed main view (`/budget`)
+  - Expense creation form with category, amount, description, date
+  - Budget creation with name, limit, category, period selection
+  - Allowance management with user assignment, amount, frequency
+  - Budget types including Expense, Budget, Allowance (`src/types/budget.ts`)
+  - Budget service layer with Firestore listeners (`src/services/budgetService.ts`)
+  - calculateBudgetProgress helper syncs spent amounts from expenses
+  - getExpenseInsights calculates totals, category breakdown, top spending
+  - Visual progress bars showing budget utilization (green < 100%, red > 100%)
+  - Insights dashboard cards showing total, count, top category
+  - Orange/amber gradient theme matching budget feature branding
+  - Navigation link and route wired; feature table updated to "In Progress"
+- Next Steps (Phase 2):
+  - Edit/delete expenses, budgets, allowances
+  - Budget notifications when approaching/exceeding limits
+  - Expense splitting between family members
+  - Recurring expense templates
+  - Export to CSV/PDF for record keeping
+  - Budget recommendations based on spending patterns
+  - Charts and visualizations for spending trends
 
 ## Feature 5: Family Safety & Location
 - Status: Planned

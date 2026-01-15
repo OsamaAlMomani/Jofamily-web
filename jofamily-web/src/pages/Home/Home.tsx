@@ -22,6 +22,9 @@ function Home() {
               <li className="nav-item"><a href="#features" className="nav-link">Features</a></li>
               <li className="nav-item"><Link to="/chat" className="nav-link">Chat</Link></li>
               <li className="nav-item"><Link to="/calendar" className="nav-link">Calendar</Link></li>
+              <li className="nav-item"><Link to="/tasks" className="nav-link">Tasks</Link></li>
+              <li className="nav-item"><Link to="/budget" className="nav-link">Budget</Link></li>
+              <li className="nav-item"><Link to="/safety" className="nav-link">Safety</Link></li>
               <li className="nav-item"><Link to="/rooms" className="nav-link">Rooms</Link></li>
               <li className="nav-item"><Link to="/rtc-practice" className="nav-link">RTC Practice</Link></li>
             </ul>

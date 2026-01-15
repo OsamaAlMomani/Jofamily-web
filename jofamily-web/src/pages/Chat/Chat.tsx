@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './Chat.css';
 import { useAuth } from '../../core';
 import {
+  addReaction,
   createThread,
   deleteMessage,
   getUnreadCount,
@@ -9,10 +10,12 @@ import {
   listenToThreads,
   listenToTyping,
   markMessagesSeen,
+  removeReaction,
   sendMessage,
   setTyping,
   toggleMuteThread,
   togglePinThread,
+  uploadFile,
 } from '../../services';
 import type { ChatMessage, ChatThread, TypingState } from '../../types/chat';
 
@@ -25,10 +28,14 @@ export default function Chat() {
   const [newThreadName, setNewThreadName] = useState('');
   const [draft, setDraft] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [sending, setSending] = useState(false);
   const [creating, setCreating] = useState(false);
   const [typing, setTypingState] = useState<TypingState[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const unsub = listenToThreads((list) => {
@@ -127,14 +134,65 @@ export default function Chat() {
         authorName: user.email ?? 'You',
         text: draft.trim(),
         mediaUrl: mediaUrl.trim() || null,
+        replyToId: replyingTo?.id ?? null,
+        replyToText: replyingTo?.text ?? null,
+        replyToAuthor: replyingTo?.authorName ?? null,
       });
       setDraft('');
       setMediaUrl('');
+      setReplyingTo(null);
       void setTyping(activeThreadId, user.uid, false, user.email);
     } finally {
       setSending(false);
     }
   }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user || !activeThreadId) return;
+
+    // 10MB limit
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+
+    setUploadingFile(true);
+    try {
+      const url = await uploadFile(file, `chat/${activeThreadId}/${Date.now()}_${file.name}`);
+      setMediaUrl(url);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('File upload failed:', error);
+      alert('File upload failed. Please try again.');
+    } finally {
+      setUploadingFile(false);
+    }
+  }
+
+  async function handleReaction(messageId: string, emoji: string) {
+    if (!user || !activeThreadId) return;
+    const msg = messages.find((m) => m.id === messageId);
+    if (!msg) return;
+
+    const userReaction = msg.reactions?.find((r) => r.userId === user.uid && r.emoji === emoji);
+    if (userReaction) {
+      await removeReaction(activeThreadId, messageId, emoji, user.uid, user.email);
+    } else {
+      await addReaction(activeThreadId, messageId, emoji, user.uid, user.email);
+    }
+    setShowEmojiPicker(null);
+  }
+
+  function handleReply(msg: ChatMessage) {
+    setReplyingTo(msg);
+  }
+
+  const commonEmojis = ['👍', '❤️', '😂', '🎉', '🔥', '👏'];
+
 
   function handleTyping(value: string) {
     setDraft(value);
@@ -271,11 +329,79 @@ export default function Chat() {
                 messages.map((msg) => (
                   <div key={msg.id} className={`message ${msg.authorId === user.uid ? 'message--mine' : ''}`}>
                     <div className="message-author">{msg.authorName ?? 'Unknown'}</div>
+                    {msg.replyToText && (
+                      <div className="message-reply-ref">
+                        <div className="reply-ref-label">↩️ {msg.replyToAuthor}</div>
+                        <div className="reply-ref-text">{msg.replyToText}</div>
+                      </div>
+                    )}
                     <div className="message-text">{msg.text}</div>
                     {msg.mediaUrl && (
                       <a className="message-media" href={msg.mediaUrl} target="_blank" rel="noreferrer">
                         View attachment
                       </a>
+                    )}
+                    {msg.reactions && msg.reactions.length > 0 && (
+                      <div className="message-reactions">
+                        {Object.entries(
+                          msg.reactions.reduce(
+                            (acc, r) => {
+                              acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                              return acc;
+                            },
+                            {} as Record<string, number>
+                          )
+                        ).map(([emoji, count]) => {
+                          const userReacted = msg.reactions?.some((r) => r.userId === user.uid && r.emoji === emoji);
+                          return (
+                            <button
+                              key={emoji}
+                              type="button"
+                              className={`reaction-bubble ${userReacted ? 'reaction-bubble--active' : ''}`}
+                              onClick={() => handleReaction(msg.id, emoji)}
+                            >
+                              {emoji} {count}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <div className="message-actions">
+                      <button
+                        type="button"
+                        className="msg-action-btn"
+                        onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
+                        title="React"
+                      >
+                        😊
+                      </button>
+                      <button type="button" className="msg-action-btn" onClick={() => handleReply(msg)} title="Reply">
+                        ↩️
+                      </button>
+                      {msg.authorId === user.uid && (
+                        <button
+                          type="button"
+                          className="msg-action-btn msg-action-btn--delete"
+                          onClick={() => handleDeleteMessage(msg)}
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      )}
+                    </div>
+                    {showEmojiPicker === msg.id && (
+                      <div className="emoji-picker">
+                        {commonEmojis.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            className="emoji-btn"
+                            onClick={() => handleReaction(msg.id, emoji)}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
                     )}
                     <div className="message-meta">
                       {msg.createdAt
@@ -283,11 +409,6 @@ export default function Chat() {
                         : 'pending'}{' '}
                       · {msg.status === 'seen' ? 'Seen' : 'Sent'}
                     </div>
-                    {msg.authorId === user.uid && (
-                      <button type="button" className="message-delete" onClick={() => handleDeleteMessage(msg)}>
-                        Delete
-                      </button>
-                    )}
                   </div>
                 ))
               )
@@ -306,6 +427,17 @@ export default function Chat() {
           </div>
 
           <form className="chat-composer" onSubmit={handleSend}>
+            {replyingTo && (
+              <div className="reply-preview">
+                <div className="reply-preview-content">
+                  <div className="reply-preview-label">Replying to {replyingTo.authorName}</div>
+                  <div className="reply-preview-text">{replyingTo.text}</div>
+                </div>
+                <button type="button" onClick={() => setReplyingTo(null)} className="reply-preview-close">
+                  ✕
+                </button>
+              </div>
+            )}
             <input
               type="text"
               placeholder={activeThreadId ? 'Type a message…' : 'Select a thread first'}
@@ -323,9 +455,28 @@ export default function Chat() {
               placeholder="Optional image/file URL"
               value={mediaUrl}
               onChange={(e) => setMediaUrl(e.target.value)}
-              disabled={!activeThreadId}
+              disabled={!activeThreadId || uploadingFile}
             />
-            <button type="submit" disabled={!activeThreadId || (!draft.trim() && !mediaUrl.trim()) || sending}>
+            <div className="file-upload-row">
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileSelect}
+                disabled={!activeThreadId || uploadingFile}
+                accept="image/*,video/*,.pdf,.doc,.docx"
+                style={{ display: 'none' }}
+                id="file-upload-input"
+              />
+              <label htmlFor="file-upload-input" className={`file-upload-btn ${!activeThreadId || uploadingFile ? 'disabled' : ''}`}>
+                {uploadingFile ? 'Uploading…' : '📎 Attach File'}
+              </label>
+              {mediaUrl && (
+                <button type="button" onClick={() => setMediaUrl('')} className="clear-media-btn" title="Clear attachment">
+                  ✕
+                </button>
+              )}
+            </div>
+            <button type="submit" disabled={!activeThreadId || (!draft.trim() && !mediaUrl.trim()) || sending || uploadingFile}>
               {sending ? 'Sending…' : 'Send'}
             </button>
           </form>

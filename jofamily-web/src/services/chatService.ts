@@ -78,6 +78,10 @@ export function listenToMessages(threadId: string, callback: (messages: ChatMess
         text: data.text ?? '',
         status: (data.status as ChatMessage['status']) ?? 'sent',
         mediaUrl: data.mediaUrl ?? null,
+        reactions: data.reactions ?? [],
+        replyToId: data.replyToId ?? null,
+        replyToText: data.replyToText ?? null,
+        replyToAuthor: data.replyToAuthor ?? null,
         createdAt,
       };
     });
@@ -92,6 +96,10 @@ export async function sendMessage(input: SendMessageInput) {
     authorName: input.authorName ?? null,
     text: input.text,
     mediaUrl: input.mediaUrl ?? null,
+    reactions: [],
+    replyToId: input.replyToId ?? null,
+    replyToText: input.replyToText ?? null,
+    replyToAuthor: input.replyToAuthor ?? null,
     createdAt: now,
     status: 'sent',
   });
@@ -169,4 +177,32 @@ export async function getUnreadCount(threadId: string, userId: string): Promise<
     }
   });
   return count;
+}
+
+export async function addReaction(
+  threadId: string,
+  messageId: string,
+  emoji: string,
+  userId: string,
+  userName?: string | null
+) {
+  const ref = doc(messagesCollection(threadId), messageId);
+  const reaction = { emoji, userId, userName: userName ?? null };
+  await updateDoc(ref, {
+    reactions: arrayUnion(reaction),
+  });
+}
+
+export async function removeReaction(
+  threadId: string,
+  messageId: string,
+  emoji: string,
+  userId: string,
+  userName?: string | null
+) {
+  const ref = doc(messagesCollection(threadId), messageId);
+  const reaction = { emoji, userId, userName: userName ?? null };
+  await updateDoc(ref, {
+    reactions: arrayRemove(reaction),
+  });
 }

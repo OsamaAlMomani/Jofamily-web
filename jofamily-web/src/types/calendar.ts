@@ -26,3 +26,16 @@ export type CreateEventInput = {
   isRecurring?: boolean;
   recurrenceRule?: string | null;
 };
+
+export type UpdateEventInput = {
+  title?: string;
+  description?: string;
+  start?: Date;
+  end?: Date;
+  location?: string;
+  attendees?: string[];
+  color?: string;
+  reminderMinutes?: number | null;
+  isRecurring?: boolean;
+  recurrenceRule?: string | null;
+};

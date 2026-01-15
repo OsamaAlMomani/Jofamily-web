@@ -7,16 +7,19 @@ import {
   listenToLeaderboard,
   listenToTasks,
   updateTaskStatus,
+  listenToFamilyMembers,
 } from '../../services';
 import type { Task, TaskPriority, UserStats } from '../../types/tasks';
+import type { FamilyMember } from '../../services/userService';
 
 export default function Tasks() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [leaderboard, setLeaderboard] = useState<UserStats[]>([]);
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [assignedTo, setAssignedTo] = useState('');
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [priority, setPriority] = useState<TaskPriority>('medium');
   const [points, setPoints] = useState(10);
   const [dueDate, setDueDate] = useState('');
@@ -33,6 +36,14 @@ export default function Tasks() {
     return () => unsub();
   }, []);
 
+  useEffect(() => {
+    if (!user?.email) return;
+    // For now, use email domain as familyId
+    const familyId = user.email.split('@')[1] || user.email;
+    const unsub = listenToFamilyMembers(familyId, setFamilyMembers);
+    return () => unsub();
+  }, [user?.email]);
+
   const filteredTasks = useMemo(() => {
     if (!user) return [];
     if (filter === 'mine') return tasks.filter((t) => t.assignedTo === user.uid);
@@ -47,13 +58,13 @@ export default function Tasks() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!user || !title.trim() || !assignedTo.trim()) return;
+    if (!user || !title.trim() || !selectedMember) return;
     setCreating(true);
     try {
       await createTask({
         title: title.trim(),
         description: description.trim(),
-        assignedTo: assignedTo.trim(),
+        assignedTo: selectedMember.uid,
         assignedBy: user.uid,
         priority,
         points,
@@ -61,7 +72,7 @@ export default function Tasks() {
       });
       setTitle('');
       setDescription('');
-      setAssignedTo('');
+      setSelectedMember(null);
       setPriority('medium');
       setPoints(10);
       setDueDate('');
@@ -139,8 +150,27 @@ export default function Tasks() {
                 />
               </label>
               <label>
-                Assign to (User ID)
-                <input value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder={user.uid} />
+                Assign to
+                <div className="member-picker">
+                  {familyMembers.map((member) => (
+                    <button
+                      key={member.uid}
+                      type="button"
+                      className={`member-option ${selectedMember?.uid === member.uid ? 'selected' : ''}`}
+                      onClick={() => setSelectedMember(member)}
+                    >
+                      {member.photoURL && <img src={member.photoURL} alt={member.displayName} className="member-avatar" />}
+                      {!member.photoURL && <div className="member-avatar-placeholder">{member.displayName.charAt(0)}</div>}
+                      <div className="member-details">
+                        <div className="member-name">{member.displayName}</div>
+                        <div className="member-email">{member.email}</div>
+                      </div>
+                    </button>
+                  ))}
+                  {familyMembers.length === 0 && (
+                    <p className="no-members">No family members found</p>
+                  )}
+                </div>
               </label>
               <label>
                 Priority
@@ -164,7 +194,7 @@ export default function Tasks() {
                 Due Date
                 <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
               </label>
-              <button type="submit" disabled={!title.trim() || !assignedTo.trim() || creating}>
+              <button type="submit" disabled={!title.trim() || !selectedMember || creating}>
                 {creating ? 'Creating…' : 'Create Task'}
               </button>
             </form>

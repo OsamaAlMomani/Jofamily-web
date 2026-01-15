@@ -149,6 +149,54 @@
   cursor: not-allowed;
 }
 
+.file-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.file-upload-btn {
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  border-radius: 10px;
+  color: #bfdbfe;
+  padding: 0.65rem 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.file-upload-btn:hover:not(.disabled) {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: rgba(99, 102, 241, 0.6);
+  transform: translateY(-1px);
+}
+
+.file-upload-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.clear-media-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  color: #fca5a5;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-media-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
 .thread-list {
   display: flex;
   flex-direction: column;
@@ -250,6 +298,173 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   padding: 0.6rem 0.75rem;
+  position: relative;
+}
+
+.message-reply-ref {
+  background: rgba(99, 102, 241, 0.1);
+  border-left: 3px solid rgba(99, 102, 241, 0.6);
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+}
+
+.reply-ref-label {
+  font-size: 0.75rem;
+  color: #a5b4fc;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.reply-ref-text {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.reaction-bubble {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 12px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: #e2e8f0;
+}
+
+.reaction-bubble:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.reaction-bubble--active {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.7);
+  font-weight: 700;
+}
+
+.message-actions {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.message:hover .message-actions {
+  opacity: 1;
+}
+
+.msg-action-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: #e2e8f0;
+}
+
+.msg-action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.msg-action-btn--delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.emoji-picker {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  border-radius: 10px;
+  padding: 0.5rem;
+  display: flex;
+  gap: 0.35rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  backdrop-filter: blur(12px);
+}
+
+.emoji-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.emoji-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.5);
+  transform: scale(1.1);
+}
+
+.reply-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.reply-preview-content {
+  flex: 1;
+}
+
+.reply-preview-label {
+  font-size: 0.75rem;
+  color: #a5b4fc;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.reply-preview-text {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reply-preview-close {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  color: #fca5a5;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 600;
+}
+
+.reply-preview-close:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.message {
   max-width: 70%;
 }
 

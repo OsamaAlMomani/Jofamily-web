@@ -1,11 +1,14 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   Timestamp,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
@@ -16,6 +19,8 @@ import type {
   CreateBudgetInput,
   CreateExpenseInput,
   Expense,
+  UpdateExpenseInput,
+  UpdateBudgetInput,
 } from '../types/budget';
 
 const expensesCollection = collection(db, 'familyExpenses');
@@ -176,6 +181,36 @@ export function getExpenseInsights(expenses: Expense[]) {
     total,
     byCategory,
     topCategory: topCategory ? { category: topCategory[0], amount: topCategory[1] } : null,
-    count: expenses.length,
   };
+}
+
+export async function updateExpense(expenseId: string, input: UpdateExpenseInput) {
+  const expenseRef = doc(expensesCollection, expenseId);
+  const updateData: Record<string, unknown> = {};
+
+  if (input.description !== undefined) updateData.description = input.description;
+  if (input.amount !== undefined) updateData.amount = input.amount;
+  if (input.category !== undefined) updateData.category = input.category;
+  if (input.date !== undefined) updateData.date = Timestamp.fromDate(input.date);
+
+  await updateDoc(expenseRef, updateData);
+}
+
+export async function deleteExpense(expenseId: string) {
+  await deleteDoc(doc(expensesCollection, expenseId));
+}
+
+export async function updateBudget(budgetId: string, input: UpdateBudgetInput) {
+  const budgetRef = doc(budgetsCollection, budgetId);
+  const updateData: Record<string, unknown> = {};
+
+  if (input.category !== undefined) updateData.category = input.category;
+  if (input.limit !== undefined) updateData.limit = input.limit;
+  if (input.period !== undefined) updateData.period = input.period;
+
+  await updateDoc(budgetRef, updateData);
+}
+
+export async function deleteBudget(budgetId: string) {
+  await deleteDoc(doc(budgetsCollection, budgetId));
 }

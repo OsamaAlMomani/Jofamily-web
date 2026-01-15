@@ -6,10 +6,14 @@ import {
   createAllowance,
   createBudget,
   createExpense,
+  deleteExpense,
+  deleteBudget,
   getExpenseInsights,
   listenToAllowances,
   listenToBudgets,
   listenToExpenses,
+  updateExpense,
+  updateBudget,
 } from '../../services';
 import type {
   Allowance,
@@ -59,6 +63,10 @@ export default function Budget() {
   const [creatingAllow, setCreatingAllow] = useState(false);
 
   const [view, setView] = useState<'expenses' | 'budgets' | 'allowances'>('expenses');
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingBudget, setEditingBudget] = useState<BudgetType | null>(null);
+  const [updatingExp, setUpdatingExp] = useState(false);
+  const [updatingBudget, setUpdatingBudget] = useState(false);
 
   useEffect(() => {
     const unsub = listenToExpenses(setExpenses);
@@ -149,6 +157,89 @@ export default function Budget() {
     }
   }
 
+  function handleEditExpense(exp: Expense) {
+    setEditingExpense(exp);
+    setExpDesc(exp.description);
+    setExpAmount(exp.amount.toString());
+    setExpCategory(exp.category);
+    setExpDate(exp.date.toISOString().split('T')[0]);
+  }
+
+  async function handleUpdateExpense(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingExpense || !expDesc.trim() || !expAmount || !expDate) return;
+    setUpdatingExp(true);
+    try {
+      await updateExpense(editingExpense.id, {
+        description: expDesc.trim(),
+        amount: parseFloat(expAmount),
+        category: expCategory,
+        date: new Date(expDate),
+      });
+      setEditingExpense(null);
+      setExpDesc('');
+      setExpAmount('');
+      setExpCategory('food');
+      setExpDate('');
+    } finally {
+      setUpdatingExp(false);
+    }
+  }
+
+  function handleCancelEditExpense() {
+    setEditingExpense(null);
+    setExpDesc('');
+    setExpAmount('');
+    setExpCategory('food');
+    setExpDate('');
+  }
+
+  async function handleDeleteExpense(expenseId: string) {
+    if (!confirm('Delete this expense?')) return;
+    await deleteExpense(expenseId);
+  }
+
+  function handleEditBudget(budget: BudgetType) {
+    setEditingBudget(budget);
+    setBudgetName(budget.name);
+    setBudgetLimit(budget.limit.toString());
+    setBudgetCategory(budget.category);
+    setBudgetPeriod(budget.period);
+  }
+
+  async function handleUpdateBudget(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingBudget || !budgetLimit) return;
+    setUpdatingBudget(true);
+    try {
+      await updateBudget(editingBudget.id, {
+        category: budgetCategory,
+        limit: parseFloat(budgetLimit),
+        period: budgetPeriod,
+      });
+      setEditingBudget(null);
+      setBudgetName('');
+      setBudgetLimit('');
+      setBudgetCategory('food');
+      setBudgetPeriod('monthly');
+    } finally {
+      setUpdatingBudget(false);
+    }
+  }
+
+  function handleCancelEditBudget() {
+    setEditingBudget(null);
+    setBudgetName('');
+    setBudgetLimit('');
+    setBudgetCategory('food');
+    setBudgetPeriod('monthly');
+  }
+
+  async function handleDeleteBudget(budgetId: string) {
+    if (!confirm('Delete this budget?')) return;
+    await deleteBudget(budgetId);
+  }
+
   if (!user) {
     return (
       <div className="budget-page">
@@ -177,7 +268,7 @@ export default function Budget() {
               <div className="insight-label">Total Spent</div>
             </div>
             <div className="insight-card">
-              <div className="insight-value">{insights.count}</div>
+              <div className="insight-value">{expenses.length}</div>
               <div className="insight-label">Expenses</div>
             </div>
             {insights.topCategory && (
@@ -193,8 +284,8 @@ export default function Budget() {
       <section className="budget-layout">
         <aside className="budget-sidebar">
           <div className="sidebar-section">
-            <h2>Add Expense</h2>
-            <form onSubmit={handleCreateExpense} className="budget-form">
+            <h2>{editingExpense ? 'Edit Expense' : 'Add Expense'}</h2>
+            <form onSubmit={editingExpense ? handleUpdateExpense : handleCreateExpense} className="budget-form">
               <label>
                 Description
                 <input value={expDesc} onChange={(e) => setExpDesc(e.target.value)} placeholder="Groceries" />
@@ -223,15 +314,22 @@ export default function Budget() {
                 Date
                 <input type="date" value={expDate} onChange={(e) => setExpDate(e.target.value)} />
               </label>
-              <button type="submit" disabled={!expDesc.trim() || !expAmount || !expDate || creatingExp}>
-                {creatingExp ? 'Adding…' : 'Add Expense'}
-              </button>
+              <div className="form-actions">
+                {editingExpense && (
+                  <button type="button" onClick={handleCancelEditExpense} className="btn-secondary">
+                    Cancel
+                  </button>
+                )}
+                <button type="submit" disabled={!expDesc.trim() || !expAmount || !expDate || creatingExp || updatingExp}>
+                  {editingExpense ? (updatingExp ? 'Updating…' : 'Update') : (creatingExp ? 'Adding…' : 'Add Expense')}
+                </button>
+              </div>
             </form>
           </div>
 
           <div className="sidebar-section">
-            <h2>Create Budget</h2>
-            <form onSubmit={handleCreateBudget} className="budget-form">
+            <h2>{editingBudget ? 'Edit Budget' : 'Create Budget'}</h2>
+            <form onSubmit={editingBudget ? handleUpdateBudget : handleCreateBudget} className="budget-form">
               <label>
                 Name
                 <input value={budgetName} onChange={(e) => setBudgetName(e.target.value)} placeholder="Food Budget" />
@@ -263,9 +361,16 @@ export default function Budget() {
                   <option value="monthly">Monthly</option>
                 </select>
               </label>
-              <button type="submit" disabled={!budgetName.trim() || !budgetLimit || creatingBudget}>
-                {creatingBudget ? 'Creating…' : 'Create Budget'}
-              </button>
+              <div className="form-actions">
+                {editingBudget && (
+                  <button type="button" onClick={handleCancelEditBudget} className="btn-secondary">
+                    Cancel
+                  </button>
+                )}
+                <button type="submit" disabled={!budgetLimit || creatingBudget || updatingBudget}>
+                  {editingBudget ? (updatingBudget ? 'Updating…' : 'Update') : (creatingBudget ? 'Creating…' : 'Create Budget')}
+                </button>
+              </div>
             </form>
           </div>
 
@@ -344,6 +449,12 @@ export default function Budget() {
                     <span className="expense-by">{exp.paidByName}</span>
                     <span className="expense-date">{exp.date.toLocaleDateString()}</span>
                   </div>
+                  {user && exp.paidBy === user.uid && (
+                    <div className="expense-actions">
+                      <button onClick={() => handleEditExpense(exp)} className="action-btn" title="Edit">✏️</button>
+                      <button onClick={() => handleDeleteExpense(exp.id)} className="action-btn" title="Delete">🗑️</button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -376,6 +487,12 @@ export default function Budget() {
                         {percent.toFixed(0)}%
                       </span>
                     </div>
+                    {user && budget.createdBy === user.uid && (
+                      <div className="budget-actions">
+                        <button onClick={() => handleEditBudget(budget)} className="action-btn" title="Edit">✏️</button>
+                        <button onClick={() => handleDeleteBudget(budget.id)} className="action-btn" title="Delete">🗑️</button>
+                      </div>
+                    )}
                   </div>
                 );
               })}

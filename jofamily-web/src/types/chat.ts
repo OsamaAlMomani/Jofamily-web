@@ -21,6 +21,16 @@ export type ChatMessage = {
   createdAt?: Date | null;
   status?: 'sent' | 'seen';
   mediaUrl?: string | null;
+  reactions?: MessageReaction[];
+  replyToId?: string | null;
+  replyToText?: string | null;
+  replyToAuthor?: string | null;
+};
+
+export type MessageReaction = {
+  emoji: string;
+  userId: string;
+  userName?: string | null;
 };
 
 export type CreateThreadInput = {
@@ -34,6 +44,9 @@ export type SendMessageInput = {
   authorName?: string | null;
   text: string;
   mediaUrl?: string | null;
+  replyToId?: string | null;
+  replyToText?: string | null;
+  replyToAuthor?: string | null;
 };
 
 export type TypingState = {

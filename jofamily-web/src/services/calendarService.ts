@@ -1,14 +1,17 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   Timestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import type { CalendarEvent, CreateEventInput } from '../types/calendar';
+import type { CalendarEvent, CreateEventInput, UpdateEventInput } from '../types/calendar';
 
 const eventsCollection = collection(db, 'familyEvents');
 
@@ -66,4 +69,27 @@ export function detectConflicts(
     const sharesAttendee = attendees.some((a) => ev.attendees?.includes(a));
     return overlaps && sharesAttendee;
   });
+}
+
+export async function updateEvent(eventId: string, input: UpdateEventInput) {
+  const eventRef = doc(db, 'familyEvents', eventId);
+  const updateData: any = {};
+
+  if (input.title !== undefined) updateData.title = input.title;
+  if (input.description !== undefined) updateData.description = input.description;
+  if (input.start !== undefined) updateData.start = input.start;
+  if (input.end !== undefined) updateData.end = input.end;
+  if (input.location !== undefined) updateData.location = input.location;
+  if (input.attendees !== undefined) updateData.attendees = input.attendees;
+  if (input.color !== undefined) updateData.color = input.color;
+  if (input.reminderMinutes !== undefined) updateData.reminderMinutes = input.reminderMinutes;
+  if (input.isRecurring !== undefined) updateData.isRecurring = input.isRecurring;
+  if (input.recurrenceRule !== undefined) updateData.recurrenceRule = input.recurrenceRule;
+
+  await updateDoc(eventRef, updateData);
+}
+
+export async function deleteEvent(eventId: string) {
+  const eventRef = doc(db, 'familyEvents', eventId);
+  await deleteDoc(eventRef);
 }

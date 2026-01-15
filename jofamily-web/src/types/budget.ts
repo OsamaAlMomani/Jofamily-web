@@ -55,3 +55,16 @@ export type CreateAllowanceInput = {
   amount: number;
   frequency: 'weekly' | 'monthly';
 };
+
+export type UpdateExpenseInput = {
+  description?: string;
+  amount?: number;
+  category?: ExpenseCategory;
+  date?: Date;
+};
+
+export type UpdateBudgetInput = {
+  category?: ExpenseCategory;
+  limit?: number;
+  period?: 'weekly' | 'monthly';
+};

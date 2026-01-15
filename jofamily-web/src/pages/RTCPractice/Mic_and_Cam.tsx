@@ -1,19 +1,18 @@
-let Stream  = null;
-
-const constraints={
-    audio:true,
-    video:true
+const defaultConstraints: MediaStreamConstraints = {
+    audio: true,
+    video: true,
 };
 
-const GetUserMedia=async()=>{
-    try{
-        Stream=await navigator.mediaDevices.getUserMedia(constraints);
-        return Stream;
-    }   catch (err){
-        console.error("Error accessing media devices.", err);
+async function GetUserMedia(constraints: MediaStreamConstraints = defaultConstraints) {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log('I was here GetUserMedia');
+        return stream;
+    } catch (err) {
+        console.error('Error accessing media devices.', err);
         throw err;
-    };
+    }
 }
 
-export {GetUserMedia};  
+export { GetUserMedia };
 

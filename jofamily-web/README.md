@@ -6,6 +6,15 @@ This repo includes an RTC learning page (`/rtc-practice`) plus notes on how WebR
 
 - Docs: [docs/RTC.md](docs/RTC.md)
 
+## Firebase setup (required)
+
+This project expects Firebase config to be provided via Vite env vars. If you don't add them, the app will throw:
+"Missing Firebase env vars: VITE_FIREBASE_..."
+
+1) Create a `.env` file in the same folder as `package.json` (this folder).
+2) Copy from `.env.example` and fill values from Firebase Console → Project settings → General → Your apps (Web).
+3) Restart the dev server after changing `.env`.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

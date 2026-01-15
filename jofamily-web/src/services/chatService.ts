@@ -20,6 +20,7 @@ import type {
   CreateThreadInput,
   SendMessageInput,
   TypingState,
+  MessageSearchParams,
 } from '../types/chat';
 
 const threadsCollection = collection(db, 'chatThreads');
@@ -204,5 +205,77 @@ export async function removeReaction(
   const reaction = { emoji, userId, userName: userName ?? null };
   await updateDoc(ref, {
     reactions: arrayRemove(reaction),
+  });
+}
+
+export async function searchMessages(params: MessageSearchParams): Promise<ChatMessage[]> {
+  const { threadId, query: searchQuery, authorId, fromDate, toDate } = params;
+  
+  // Get all messages first, then filter (Firebase doesn't support full-text search)
+  const q = query(messagesCollection(threadId), orderBy('createdAt', 'desc'));
+  const snap = await getDocs(q);
+  
+  const results: ChatMessage[] = [];
+  
+  snap.forEach((docSnap) => {
+    const data = docSnap.data();
+    const createdAt = data.createdAt instanceof Timestamp ? data.createdAt.toDate() : null;
+    
+    // Check text match (case-insensitive)
+    const textMatch = data.text.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Check author filter
+    const authorMatch = !authorId || data.authorId === authorId;
+    
+    // Check date range
+    const dateMatch = !fromDate || !toDate || (createdAt && createdAt >= fromDate && createdAt <= toDate);
+    
+    if (textMatch && authorMatch && dateMatch) {
+      results.push({
+        id: docSnap.id,
+        threadId,
+        authorId: data.authorId ?? 'unknown',
+        authorName: data.authorName ?? 'Unknown',
+        text: data.text ?? '',
+        status: (data.status as ChatMessage['status']) ?? 'sent',
+        mediaUrl: data.mediaUrl ?? null,
+        reactions: data.reactions ?? [],
+        replyToId: data.replyToId ?? null,
+        replyToText: data.replyToText ?? null,
+        replyToAuthor: data.replyToAuthor ?? null,
+        readBy: data.readBy ?? {},
+        createdAt,
+      });
+    }
+  });
+  
+  return results;
+}
+
+export async function markMessageAsRead(
+  threadId: string,
+  messageId: string,
+  userId: string
+): Promise<void> {
+  const ref = doc(messagesCollection(threadId), messageId);
+  const timestamp = Date.now();
+  
+  await updateDoc(ref, {
+    [`readBy.${userId}`]: timestamp,
+  });
+}
+
+export async function editMessage(
+  threadId: string,
+  messageId: string,
+  newText: string
+): Promise<void> {
+  const ref = doc(messagesCollection(threadId), messageId);
+  const now = serverTimestamp();
+  
+  await updateDoc(ref, {
+    text: newText,
+    isEdited: true,
+    editedAt: now,
   });
 }

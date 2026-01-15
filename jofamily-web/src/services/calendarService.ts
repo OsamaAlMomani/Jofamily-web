@@ -93,3 +93,37 @@ export async function deleteEvent(eventId: string) {
   const eventRef = doc(db, 'familyEvents', eventId);
   await deleteDoc(eventRef);
 }
+
+export function exportEventsToICS(events: CalendarEvent[]): string {
+  const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
+  let ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//JoFamily//Family Calendar//EN\n';
+  
+  events.forEach((event) => {
+    const startTime = event.start.toISOString().replace(/[-:]/g, '').split('.')[0];
+    const endTime = event.end.toISOString().replace(/[-:]/g, '').split('.')[0];
+    
+    ics += `BEGIN:VEVENT\n`;
+    ics += `UID:${event.id}@jofamily.com\n`;
+    ics += `DTSTAMP:${now}Z\n`;
+    ics += `DTSTART:${startTime}Z\n`;
+    ics += `DTEND:${endTime}Z\n`;
+    ics += `SUMMARY:${event.title}\n`;
+    if (event.description) ics += `DESCRIPTION:${event.description}\n`;
+    if (event.location) ics += `LOCATION:${event.location}\n`;
+    ics += `END:VEVENT\n`;
+  });
+  
+  ics += 'END:VCALENDAR';
+  return ics;
+}
+
+export function downloadICS(events: CalendarEvent[], filename = 'family-calendar.ics'): void {
+  const icsContent = exportEventsToICS(events);
+  const blob = new Blob([icsContent], { type: 'text/calendar' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  window.URL.revokeObjectURL(url);
+}

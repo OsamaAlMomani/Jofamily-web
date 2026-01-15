@@ -593,3 +593,71 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Search Panel */
+.search-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  align-items: center;
+}
+
+.search-panel input,
+.search-panel button {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.search-panel input::placeholder {
+  color: #64748b;
+}
+
+.search-panel input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.search-panel button {
+  cursor: pointer;
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+  transition: all 0.2s;
+}
+
+.search-panel button:hover:not(:disabled) {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.6);
+}
+
+.search-panel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.search-result-count {
+  padding: 0 0.875rem;
+  color: #a5b4fc;
+  font-size: 0.9rem;
+}
+
+/* Read Receipts */
+.read-receipts {
+  margin-left: 0.5rem;
+  color: #60a5fa;
+  font-size: 0.85em;
+}
+
+@media (max-width: 900px) {
+  .search-panel {
+    grid-template-columns: 1fr;
+  }
+}
+

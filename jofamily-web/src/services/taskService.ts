@@ -144,3 +144,61 @@ export async function awardPoints(userId: string, userName: string, points: numb
     { merge: true }
   );
 }
+
+export async function filterTasks(
+  tasks: Task[],
+  filters: {
+    status?: TaskStatus[];
+    priority?: string[];
+    assignedTo?: string[];
+    dueToday?: boolean;
+  }
+): Promise<Task[]> {
+  return tasks.filter((task) => {
+    if (filters.status && !filters.status.includes(task.status)) return false;
+    if (filters.priority && !filters.priority.includes(task.priority ?? 'medium')) return false;
+    if (filters.assignedTo && !filters.assignedTo.includes(task.assignedTo)) return false;
+    if (filters.dueToday && task.dueDate) {
+      const today = new Date();
+      const isDueToday = 
+        task.dueDate.getFullYear() === today.getFullYear() &&
+        task.dueDate.getMonth() === today.getMonth() &&
+        task.dueDate.getDate() === today.getDate();
+      if (!isDueToday) return false;
+    }
+    return true;
+  });
+}
+
+export function searchTasks(tasks: Task[], query: string): Task[] {
+  const lowerQuery = query.toLowerCase();
+  return tasks.filter((task) =>
+    task.title.toLowerCase().includes(lowerQuery) ||
+    (task.description ?? '').toLowerCase().includes(lowerQuery)
+  );
+}
+
+// Task templates support
+export async function createTaskFromTemplate(templateId: string, assignedTo: string): Promise<string> {
+  const templatesCollection = collection(db, 'taskTemplates');
+  const templateRef = doc(templatesCollection, templateId);
+  const templateData = await getDoc(templateRef);
+  
+  if (!templateData.exists()) throw new Error('Template not found');
+  
+  const template = templateData.data();
+  const ref = await addDoc(tasksCollection, {
+    title: template.title,
+    description: template.description ?? '',
+    assignedTo,
+    assignedBy: 'system',
+    status: 'pending',
+    priority: template.priority ?? 'medium',
+    points: template.points ?? 10,
+    dueDate: template.dueDate || null,
+    completedAt: null,
+    templateId: templateId,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}

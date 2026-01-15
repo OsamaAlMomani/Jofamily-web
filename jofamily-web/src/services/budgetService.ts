@@ -214,3 +214,66 @@ export async function updateBudget(budgetId: string, input: UpdateBudgetInput) {
 export async function deleteBudget(budgetId: string) {
   await deleteDoc(doc(budgetsCollection, budgetId));
 }
+
+export async function checkBudgetAlerts(budgets: Budget[], expenses: Expense[]) {
+  const alerts: { budgetId: string; name: string; message: string; severity: 'warning' | 'critical' }[] = [];
+  
+  budgets.forEach((budget) => {
+    const categoryExpenses = expenses.filter((exp) => exp.category === budget.category);
+    const spent = categoryExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const percentage = (spent / budget.limit) * 100;
+    
+    if (percentage >= 100) {
+      alerts.push({
+        budgetId: budget.id,
+        name: budget.name,
+        message: `Budget exceeded: ${spent.toFixed(2)} of ${budget.limit}`,
+        severity: 'critical',
+      });
+    } else if (percentage >= 80) {
+      alerts.push({
+        budgetId: budget.id,
+        name: budget.name,
+        message: `Budget warning: ${percentage.toFixed(0)}% spent`,
+        severity: 'warning',
+      });
+    }
+  });
+  
+  return alerts;
+}
+
+export interface SplitExpense {
+  id: string;
+  description: string;
+  totalAmount: number;
+  category: string;
+  paidBy: string;
+  paidByName: string;
+  splits: Array<{ userId: string; userName: string; amount: number }>;
+  date: Date;
+  createdAt: Date | null;
+}
+
+export async function createSplitExpense(
+  description: string,
+  totalAmount: number,
+  category: string,
+  paidBy: string,
+  paidByName: string,
+  splits: Array<{ userId: string; userName: string; amount: number }>,
+  date: Date
+) {
+  const splitsCollection = collection(db, 'splitExpenses');
+  const ref = await addDoc(splitsCollection, {
+    description,
+    totalAmount,
+    category,
+    paidBy,
+    paidByName,
+    splits,
+    date: Timestamp.fromDate(date),
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}

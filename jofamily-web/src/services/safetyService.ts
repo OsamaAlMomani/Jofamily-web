@@ -233,3 +233,91 @@ export function calculateDistance(
 
   return R * c;
 }
+
+export function checkIfInsideSafeZone(
+  latitude: number,
+  longitude: number,
+  safeZone: SafeZone
+): boolean {
+  const distance = calculateDistance(
+    latitude,
+    longitude,
+    safeZone.latitude,
+    safeZone.longitude
+  );
+  return distance <= (safeZone.radius ?? 1000);
+}
+
+export async function recordLocationHistory(
+  userId: string,
+  userName: string,
+  latitude: number,
+  longitude: number,
+  accuracy: number
+): Promise<void> {
+  const historyCollection = collection(db, 'familyLocationHistory');
+  await addDoc(historyCollection, {
+    userId,
+    userName,
+    latitude,
+    longitude,
+    accuracy,
+    timestamp: serverTimestamp(),
+  });
+}
+
+export async function getLocationHistory(
+  userId: string,
+  hours = 24
+): Promise<UserLocation[]> {
+  const historyCollection = collection(db, 'familyLocationHistory');
+  const cutoffTime = new Date(Date.now() - hours * 60 * 60 * 1000);
+  const q = query(
+    historyCollection,
+    where('userId', '==', userId),
+    orderBy('timestamp', 'desc')
+  );
+
+  const snapshot = await new Promise<any>((resolve) => {
+    const unsub = onSnapshot(q, (snap) => {
+      unsub();
+      resolve(snap);
+    });
+  });
+
+  return snapshot.docs
+    .map((doc: any) => {
+      const data = doc.data();
+      const timestamp = data.timestamp?.toDate?.() || new Date();
+      return {
+        id: doc.id,
+        userId: data.userId,
+        userName: data.userName,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        accuracy: data.accuracy,
+        timestamp: timestamp as Date,
+        sharingStatus: 'history' as const,
+        lastUpdated: timestamp as Date,
+      };
+    })
+    .filter((loc: UserLocation) => (loc.timestamp as unknown as Date).getTime() > cutoffTime.getTime());
+}
+
+export async function createEmergencyAlert(
+  description: string,
+  severity: 'low' | 'medium' | 'high',
+  latitude?: number,
+  longitude?: number
+): Promise<string> {
+  const alertsCollection = collection(db, 'emergencyAlerts');
+  const ref = await addDoc(alertsCollection, {
+    description,
+    severity,
+    latitude: latitude ?? null,
+    longitude: longitude ?? null,
+    status: 'active',
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}

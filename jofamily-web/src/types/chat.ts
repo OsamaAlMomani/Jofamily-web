@@ -25,6 +25,10 @@ export type ChatMessage = {
   replyToId?: string | null;
   replyToText?: string | null;
   replyToAuthor?: string | null;
+  readBy?: Record<string, number>; // userId -> timestamp of when read
+  isEdited?: boolean;
+  editedAt?: Date | null;
+  editHistory?: { text: string; editedAt: Date }[];
 };
 
 export type MessageReaction = {
@@ -47,6 +51,14 @@ export type SendMessageInput = {
   replyToId?: string | null;
   replyToText?: string | null;
   replyToAuthor?: string | null;
+};
+
+export type MessageSearchParams = {
+  threadId: string;
+  query: string;
+  authorId?: string;
+  fromDate?: Date;
+  toDate?: Date;
 };
 
 export type TypingState = {

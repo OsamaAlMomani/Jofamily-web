@@ -11,6 +11,7 @@ import {
   listenToTyping,
   markMessagesSeen,
   removeReaction,
+  searchMessages,
   sendMessage,
   setTyping,
   toggleMuteThread,
@@ -35,6 +36,12 @@ export default function Chat() {
   const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
+  const [fromDate, setFromDate] = useState<string>('');
+  const [toDate, setToDate] = useState<string>('');
+  const [searching, setSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -223,6 +230,26 @@ export default function Chat() {
     await deleteMessage(msg.threadId, msg.id);
   }
 
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!activeThreadId || !searchQuery.trim()) return;
+    
+    setSearching(true);
+    try {
+      const results = await searchMessages({
+        threadId: activeThreadId,
+        query: searchQuery,
+        fromDate: fromDate ? new Date(fromDate) : undefined,
+        toDate: toDate ? new Date(toDate) : undefined,
+      });
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setSearching(false);
+    }
+  }
+
   if (!user) {
     return (
       <div className="chat-page">
@@ -305,6 +332,13 @@ export default function Chat() {
               <div className="thread-actions">
                 <button
                   type="button"
+                  className={`pill pill--action ${searchOpen ? 'pill--on' : ''}`}
+                  onClick={() => setSearchOpen(!searchOpen)}
+                >
+                  🔍 Search
+                </button>
+                <button
+                  type="button"
                   className={`pill pill--action ${activeThread.isPinned ? 'pill--on' : ''}`}
                   onClick={handleTogglePin}
                 >
@@ -321,12 +355,58 @@ export default function Chat() {
             )}
           </div>
 
+          {searchOpen && (
+            <form className="search-panel" onSubmit={handleSearch}>
+              <input
+                type="text"
+                placeholder="Search messages…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <input
+                type="date"
+                title="From date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+              />
+              <input
+                type="date"
+                title="To date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+              <button type="submit" disabled={!searchQuery.trim() || searching}>
+                {searching ? 'Searching…' : 'Search'}
+              </button>
+              {searchResults.length > 0 && <div className="search-result-count">{searchResults.length} results</div>}
+            </form>
+          )}
+
           <div className="chat-messages">
             {activeThreadId ? (
-              messages.length === 0 ? (
-                <div className="muted">No messages yet. Start the conversation!</div>
-              ) : (
-                messages.map((msg) => (
+              (searchOpen && searchResults.length > 0)
+                ? searchResults.map((msg) => (
+                    <div key={msg.id} className={`message ${msg.authorId === user.uid ? 'message--mine' : ''}`}>
+                      <div className="message-author">{msg.authorName ?? 'Unknown'}</div>
+                      <div className="message-text">{msg.text}</div>
+                      {msg.mediaUrl && (
+                        <a className="message-media" href={msg.mediaUrl} target="_blank" rel="noreferrer">
+                          View attachment
+                        </a>
+                      )}
+                      <div className="message-meta">
+                        {msg.createdAt
+                          ? msg.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          : 'pending'}
+                      </div>
+                    </div>
+                  ))
+                : messages.length === 0
+                  ? (
+                      <div className="muted">No messages yet. Start the conversation!</div>
+                    )
+                  : (
+                      messages.map((msg) => (
                   <div key={msg.id} className={`message ${msg.authorId === user.uid ? 'message--mine' : ''}`}>
                     <div className="message-author">{msg.authorName ?? 'Unknown'}</div>
                     {msg.replyToText && (
@@ -408,10 +488,15 @@ export default function Chat() {
                         ? msg.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                         : 'pending'}{' '}
                       · {msg.status === 'seen' ? 'Seen' : 'Sent'}
+                      {msg.readBy && Object.keys(msg.readBy).length > 0 && (
+                        <span className="read-receipts" title={`Read by ${Object.keys(msg.readBy).length} people`}>
+                          ✓✓
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))
-              )
+                    )
             ) : (
               <div className="muted">Select or create a thread to begin.</div>
             )}

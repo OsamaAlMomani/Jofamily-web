@@ -5,3 +5,4 @@ export * from './budgetService';
 export * from './safetyService';
 export * from './fileService';
 export * from './userService';
+export * from './crossFeatureService';

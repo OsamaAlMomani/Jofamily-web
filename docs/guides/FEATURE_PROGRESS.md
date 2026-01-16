@@ -1,0 +1,165 @@
+# Feature Delivery Log
+
+**Last Updated**: January 15, 2026
+
+## Feature 1: Real-Time Family Chat (Phase 1)
+- Status: ✅ Complete (Phase 1 delivered)
+- Scope (Phase 1):
+  - Real-time threads + messages using Firestore
+  - Authenticated users can create threads and send messages
+  - Delivery & seen status tracking for messages
+  - Typing indicators with user names
+  - Per-user pin/mute thread controls
+  - Thread sorting (pinned first, then by recent activity)
+  - Unread message counts per thread
+  - Optional media URL attachments
+  - Delete own messages (self-moderation)
+  - Clean composer with blur/unmount typing cleanup
+- Completed Today:
+  - Implemented Firestore chat service (`src/services/chatService.ts`)
+  - Added comprehensive chat types (`src/types/chat.ts`)
+  - Built full-featured Chat page (`/chat`) with thread management
+  - Pin/mute toggles with user-specific state (arrays in Firestore)
+  - Thread list shows badges: Pinned, Muted, Unread count
+  - Messages show "Sent" vs "Seen" status
+  - Typing indicator displays actual user names, pluralizes correctly
+  - Auto-marks messages as seen when viewing thread
+  - Clears unread count after marking seen
+  - Media URL support in composer and message display
+  - Delete button for own messages (soft delete to "[deleted]")
+- Next Steps (Phase 2 - Future):
+  - File upload to Firebase Storage (replace URL input)
+  - Voice/video messages
+  - Thread admin/member management UI
+  - Message reactions and replies
+  - Advanced moderation (admin delete, block users)
+
+## Feature 2: Shared Family Calendar
+- Status: ✅ Complete (Phase 1 delivered)
+- Scope (Phase 1):
+  - Create/list family events (title, date/time, location)
+  - Color-coded events grouped by day
+  - Reminder options (15min, 30min, 1hr, 1 day before)
+  - Recurring events (weekly rule)
+  - Real-time conflict detection for overlapping events
+  - Event badges showing reminder, recurrence, attendee count
+  - Auth guard for creation
+- Completed Today:
+  - Calendar page with create form and grouped event list (`/calendar`)
+  - Firestore-backed event service (`src/services/calendarService.ts`)
+  - Calendar types with reminder/recurrence fields (`src/types/calendar.ts`)
+  - Navigation link and route wired; feature table auto-updates
+  - Reminder dropdown (4 options)
+  - Recurring checkbox (weekly pattern)
+  - Conflict detection with warning display
+  - Event cards show badges for reminders, recurrence, attendees
+- Next Steps (Phase 2 - Future):
+  - Advanced recurrence patterns (daily, monthly, custom)
+  - Email/push notifications for reminders
+  - Attendee management UI (add/remove family members)
+  - ICS export for external calendars
+  - Calendar views (month, week, day)
+  - Event editing and deletion
+
+## Feature 3: Family Task & Chore Management
+- Status: ✅ Complete (Phase 1 delivered)
+- Scope (Phase 1):
+  - Create and assign tasks to family members
+  - Task priorities (low, medium, high)
+  - Task statuses (pending, in-progress, completed)
+  - Points system (customizable per task)
+  - Auto-award points on completion
+  - Leaderboard showing top 5 users by points
+  - Badge system (first-task, 10-tasks, 100-points, 500-points)
+  - User stats (total points, completed tasks, badges)
+  - Task filters (all, mine, assigned by me)
+  - Due dates and visual priority indicators
+- Completed Today:
+  - Tasks page with create form, task list, leaderboard (`/tasks`)
+  - Firestore-backed task service (`src/services/taskService.ts`)
+  - Task types with priority, status, points fields (`src/types/tasks.ts`)
+  - Stats tracking and badge auto-award logic
+  - Three-filter view (all/mine/assigned)
+  - Color-coded task cards by priority
+  - Start/Complete buttons for task workflow
+  - Real-time leaderboard updates
+  - Navigation and routing wired
+- Next Steps (Phase 2):
+  - Task assignment UI with family member picker
+  - More badges (streaks, categories, team achievements)
+  - Task categories/tags
+  - Task templates for recurring chores
+  - Push notifications for task assignments
+  - Team challenges and collaborative tasks
+
+## Feature 4: Family Budget & Expenses
+- Status: ✅ Complete (Phase 1 delivered)
+- Scope (Phase 1):
+  - Track family expenses with category, amount, description, date
+  - Create budgets with limits, categories, and periods (weekly/monthly)
+  - Manage allowances for family members with automatic scheduling
+  - Budget progress tracking with visual progress bars
+  - Expense insights (total spent, count, category breakdown, top category)
+  - Category system (food, transport, entertainment, utilities, health, education, other)
+  - Three-tab view: Expenses, Budgets, Allowances
+  - Real-time updates for all budget data
+  - Budget overrun detection with visual warnings
+- Completed Today:
+  - Budget page with sidebar forms and tabbed main view (`/budget`)
+  - Expense creation form with category, amount, description, date
+  - Budget creation with name, limit, category, period selection
+  - Allowance management with user assignment, amount, frequency
+  - Budget types including Expense, Budget, Allowance (`src/types/budget.ts`)
+  - Budget service layer with Firestore listeners (`src/services/budgetService.ts`)
+  - calculateBudgetProgress helper syncs spent amounts from expenses
+  - getExpenseInsights calculates totals, category breakdown, top spending
+  - Visual progress bars showing budget utilization (green < 100%, red > 100%)
+  - Insights dashboard cards showing total, count, top category
+  - Orange/amber gradient theme matching budget feature branding
+  - Navigation link and route wired; feature table updated to "In Progress"
+- Next Steps (Phase 2):
+  - Edit/delete expenses, budgets, allowances
+  - Budget notifications when approaching/exceeding limits
+  - Expense splitting between family members
+  - Recurring expense templates
+  - Export to CSV/PDF for record keeping
+  - Budget recommendations based on spending patterns
+  - Charts and visualizations for spending trends
+
+## Feature 5: Family Safety & Location
+- Status: ✅ Complete (Phase 1 delivered)
+- Scope (Phase 1):
+  - Opt-in location sharing with browser geolocation API
+  - Real-time location tracking with enable/disable toggle
+  - Create safe zones (geofences) with customizable radius
+  - Zone notifications for entry/exit events
+  - SOS alert system with active/resolved/false-alarm states
+  - Live location map showing all family members sharing location
+  - Zone event history tracking
+  - Four-tab interface: Live Map, Safe Zones, SOS Alerts, Zone Events
+  - Color-coded zones and visual status indicators
+  - Location accuracy tracking and timestamp display
+- Completed Today:
+  - Safety page with sidebar controls and tabbed main view (`/safety`)
+  - Location sharing toggle using browser geolocation watchPosition API
+  - Safe zone creation form with lat/lon, radius, color, notification settings
+  - SOS alert creation with optional message and current location
+  - Safety types including UserLocation, SafeZone, SOSAlert, ZoneEvent (`src/types/safety.ts`)
+  - Safety service layer with Firestore listeners (`src/services/safetyService.ts`)
+  - Live location cards showing user, coords, accuracy, timestamp
+  - Safe zone cards with radius, notifications, creation date
+  - SOS alert cards with status badges, resolve/false-alarm buttons
+  - Zone event list showing entry/exit activities
+  - calculateDistance helper using Haversine formula for geofence logic
+  - Blue/cyan gradient theme matching safety feature branding
+  - Real-time updates for locations, zones, alerts, events
+  - Navigation link and route wired; feature table updated to "In Progress"
+- Next Steps (Phase 2):
+  - Interactive map visualization with markers and zone circles
+  - Geofence detection using calculateDistance helper
+  - Automatic zone event creation on entry/exit
+  - Push notifications for SOS alerts and zone events
+  - Location sharing permission levels (all family, specific members)
+  - Location history and trails
+  - Battery-efficient location tracking modes
+  - Emergency contact integration

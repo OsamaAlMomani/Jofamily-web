@@ -1,9 +1,6 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
 import { useAuth } from '../../core';
-import { features } from '../../constants/features';
-import type { FeaturePhase } from '../../constants/features';
 
 function Home() {
   const { user, loading } = useAuth();
@@ -12,33 +9,6 @@ function Home() {
   const avatarLetter = user?.email ? user.email.charAt(0).toUpperCase() : '?';
   const authLink = user ? '/logout' : '/login';
   const authLabel = user ? 'Logout' : 'Login';
-  const phaseTabs: FeaturePhase[] = ['Phase 3', 'Phase 4', 'Phase 5', 'Upcoming'];
-  const [activePhase, setActivePhase] = useState<FeaturePhase>('Phase 4');
-  const phaseFeatures = features.filter(
-    (feature) => phaseTabs.includes(feature.phase) && feature.phase === activePhase
-  );
-  const launchpadItems = [
-    {
-      title: 'Mobile Apps (Phase 5)',
-      body: 'React Native iOS/Android with offline sync, biometrics, and native notifications.',
-      tag: 'In Planning',
-    },
-    {
-      title: 'Desktop Apps (Phase 5)',
-      body: 'Electron apps for Windows/macOS/Linux with tray, auto-updates, and native toasts.',
-      tag: 'In Planning',
-    },
-    {
-      title: 'Vertex AI Predictions',
-      body: 'Spending forecasts, task-duration predictions, and personalized insights from Vertex AI.',
-      tag: 'ML Ready',
-    },
-    {
-      title: 'Global Scale & Localization',
-      body: '30+ languages, regional data, and localized payments to reach everyone everywhere.',
-      tag: 'Global Ready',
-    },
-  ];
 
   return (
     <>
@@ -48,12 +18,7 @@ function Home() {
             <ul className="nav-list">
               <li className="nav-item"><a href="#intro" className="nav-link">Home</a></li>
               <li className="nav-item"><a href="#contact" className="nav-link">Contact</a></li>
-              <li className="nav-item"><a href="#features" className="nav-link">Features</a></li>
               <li className="nav-item"><Link to="/chat" className="nav-link">Chat</Link></li>
-              <li className="nav-item"><Link to="/calendar" className="nav-link">Calendar</Link></li>
-              <li className="nav-item"><Link to="/tasks" className="nav-link">Tasks</Link></li>
-              <li className="nav-item"><Link to="/budget" className="nav-link">Budget</Link></li>
-              <li className="nav-item"><Link to="/safety" className="nav-link">Safety</Link></li>
               <li className="nav-item"><Link to="/rooms" className="nav-link">Rooms</Link></li>
               <li className="nav-item"><Link to="/rtc-practice" className="nav-link">RTC Practice</Link></li>
             </ul>
@@ -146,85 +111,9 @@ function Home() {
           </div>
         </section>
 
-        {/* Section 3: Features Table */}
-        <section id="features" className="section features-section">
-          <div className="section-container">
-            <div className="table-section">
-              <div className="features-header-row">
-                <h3 className="section-title">Our Features</h3>
-                <div className="feature-tabs" role="tablist" aria-label="Feature phases">
-                  {phaseTabs.map((phase) => (
-                    <button
-                      key={phase}
-                      role="tab"
-                      aria-selected={activePhase === phase}
-                      className={`feature-tab ${activePhase === phase ? 'feature-tab--active' : ''}`}
-                      onClick={() => setActivePhase(phase)}
-                    >
-                      {phase}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <table className="features-table">
-                <thead>
-                  <tr>
-                    <th>Phase</th>
-                    <th>Feature</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(phaseFeatures.length ? phaseFeatures : features.filter((f) => phaseTabs.includes(f.phase))).map((feature) => {
-                    const statusClass = {
-                      'In Progress': 'status-in-progress',
-                      Planned: 'status-planned',
-                      Done: 'status-done',
-                      'Not Started': 'status-not-started',
-                    }[feature.status];
 
-                    return (
-                      <tr key={feature.key}>
-                        <td>{feature.phase}</td>
-                        <td>{feature.name}</td>
-                        <td>{feature.description}</td>
-                        <td>
-                          <span className={`status-pill ${statusClass}`}>
-                            {feature.status}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
 
-        {/* Section 3.5: Phase 5 Launchpad */}
-        <section id="launchpad" className="section launchpad-section">
-          <div className="section-container">
-            <div className="launchpad-header">
-              <div>
-                <h3 className="section-title">Phase 5 Launchpad</h3>
-                <p className="section-subtitle">Mobile, Desktop, ML, and Global readiness</p>
-              </div>
-              <Link to="/signup" className="launchpad-cta">Join Phase 5 Beta</Link>
-            </div>
-            <div className="launch-grid">
-              {launchpadItems.map((item) => (
-                <div key={item.title} className="launch-card">
-                  <div className="launch-card-tag">{item.tag}</div>
-                  <h4 className="launch-card-title">{item.title}</h4>
-                  <p className="launch-card-body">{item.body}</p>
-                  <div className="launch-card-footer">Phase 5 • Upcoming Release</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+
 
         {/* Section 4: Gallery */}
         <section id="gallery" className="section gallery-section">

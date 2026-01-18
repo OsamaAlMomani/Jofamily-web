@@ -1,0 +1,48 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // TEST MODE: Allow all read/write for testing
+    // In production, uncomment the rules below and comment out the test rules
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // PRODUCTION RULES (commented for testing):
+    /*
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'momani.322.44157@gmail.com';
+    }
+    
+    // Admin-only access for ERP collections
+    match /finance_records/{recordId} {
+      allow read, write: if isAdmin();
+    }
+    match /transactions/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /recurring_items/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /categories/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /tasks/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /shifts/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /documents/{docId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Default deny for everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    */
+  }
+}

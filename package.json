@@ -8,19 +8,33 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "serve:hosting": "firebase emulators:start --only hosting",
+    "emulate": "firebase emulators:start --only \"hosting,functions,firestore\"",
+    "deploy": "firebase deploy --only \"firestore,hosting\"",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "deploy:firestore": "firebase deploy --only firestore",
+    "deploy:functions": "firebase deploy --only functions",
+    "deploy:all": "firebase deploy",
+    "firebase:login": "firebase login",
+    "firebase:use": "firebase use"
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "firebase": "^12.7.0",
+    "lodash": "^4.17.21",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.12.0"
+    "react-router-dom": "^7.12.0",
+    "recharts": "^3.6.0",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
+    "@types/lodash": "^4.17.23",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
@@ -36,6 +50,9 @@
     "typescript-eslint": "^8.46.4",
     "vite": "npm:rolldown-vite@7.2.5",
     "vitest": "^4.0.17"
+  },
+  "optionalDependencies": {
+    "firebase-tools": "^13.29.1"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.2.5"

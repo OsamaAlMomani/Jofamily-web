@@ -1,22 +1,10 @@
 .lego_yellow {
-  background: linear-gradient(135deg, 
-    #fce7f3 0%, 
-    #e0d5f5 25%, 
-    #ddd6fe 50%, 
-    #c7d2fe 75%, 
-    #dbeafe 100%
-  );
-  background-size: 400% 400%;
-  animation: gradientFlow 15s ease infinite;
+  background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.6), rgba(233,244,255,0.4)),
+              linear-gradient(135deg, #eef2ff 0%, #f8fafc 40%, #ecfeff 100%);
+  backdrop-filter: blur(10px);
   width: 100%;
   min-height: 100vh;
   position: relative;
-}
-
-@keyframes gradientFlow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 body {

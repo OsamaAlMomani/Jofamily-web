@@ -9,6 +9,7 @@ function Home() {
   const avatarLetter = user?.email ? user.email.charAt(0).toUpperCase() : '?';
   const authLink = user ? '/logout' : '/login';
   const authLabel = user ? 'Logout' : 'Login';
+  const showDashboardLink = user;
 
   return (
     <>
@@ -21,6 +22,27 @@ function Home() {
               <li className="nav-item"><Link to="/chat" className="nav-link">Chat</Link></li>
               <li className="nav-item"><Link to="/rooms" className="nav-link">Rooms</Link></li>
               <li className="nav-item"><Link to="/rtc-practice" className="nav-link">RTC Practice</Link></li>
+              {showDashboardLink && (
+                <li className="nav-item">
+                  <Link to="/dashboard" className="nav-link" style={{ 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '8px',
+                    fontWeight: '600'
+                  }}>
+                    👑 Admin Dashboard
+                  </Link>
+                </li>
+              )}
+              {showDashboardLink && (
+                <>
+                  <li className="nav-item"><Link to="/dashboard/money" className="nav-link">Money</Link></li>
+                  <li className="nav-item"><Link to="/dashboard/studies" className="nav-link">Studies</Link></li>
+                  <li className="nav-item"><Link to="/dashboard/work" className="nav-link">Work</Link></li>
+                  <li className="nav-item"><Link to="/dashboard/admin" className="nav-link">Admin/Visa</Link></li>
+                </>
+              )}
             </ul>
           </nav>
 

@@ -4,28 +4,29 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  
   test: {
-    // Test environment
     environment: 'jsdom',
-    
-    // Global test utilities (describe, it, expect)
     globals: true,
-    
-    // Setup files (run before tests)
-    setupFiles: ['./src/tests/setup.ts'],
-    
-    // Include test files
-    include: ['src/**/*.{test,spec}.{ts,tsx,js,jsx}', 'test/**/*.{test,spec}.{js,jsx,ts,tsx}'],
-    
-    // Exclude from test discovery
-    exclude: ['node_modules', 'dist', 'cypress', 'temp'],
+    setupFiles: ['./src/test/setup.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['node_modules', 'dist', '.firebase'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/test/setup.ts',
+        '**/*.d.ts',
+        '**/*.config.*',
+      ],
+    },
   },
-  
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      'src': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
     },
   },
 });

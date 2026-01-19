@@ -7,11 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+
+
 node_modules
 dist
 dist-ssr
 .firebase
 *.local
+*.json
 
 # Firebase Functions build outputs
 functions/lib/**/*.js
